@@ -28,3 +28,7 @@ out/
 
 # Common libraries
 [Nn]ode_modules/
+
+# Secrets
+appsettings.json
+appsettings.Development.json
