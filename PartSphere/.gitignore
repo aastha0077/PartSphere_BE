@@ -1,0 +1,30 @@
+# .NET Core ignore rules
+bin/
+obj/
+out/
+
+# User-specific files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Databases
+*.db
+*.db-shm
+*.db-wal
+
+# Build artifacts
+*.user
+*.userosscache
+*.sln.docuser
+
+# Common libraries
+[Nn]ode_modules/

@@ -1,0 +1,6 @@
+@PartSphere_HostAddress = http://localhost:5186
+
+GET {{PartSphere_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
