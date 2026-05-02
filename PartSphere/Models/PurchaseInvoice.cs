@@ -15,6 +15,12 @@ namespace PartSphere.Models
 
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
+        [MaxLength(50)]
+        public string Status { get; set; } = "Completed";
+
+        [MaxLength(50)]
+        public string PaymentMethod { get; set; } = "Cash"; // Cash, Credit
+
         [MaxLength(500)]
         public string Notes { get; set; } = string.Empty;
 

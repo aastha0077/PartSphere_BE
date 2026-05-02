@@ -15,6 +15,11 @@ namespace PartSphere.Models
         [MaxLength(300)]
         public string Address { get; set; } = string.Empty;
 
+        [Required, EmailAddress, MaxLength(150)]
+        public string Email { get; set; } = string.Empty;
+
+        public int LoyaltyPoints { get; set; } = 0;
+
         // Foreign key to User (for self-registered customers)
         public int? UserId { get; set; }
         public User? User { get; set; }

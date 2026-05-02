@@ -14,6 +14,11 @@ namespace PartSphere.Models
         public int StaffId { get; set; }
         public User Staff { get; set; } = null!;
 
+        public int? VehicleId { get; set; }
+        public Vehicle? Vehicle { get; set; }
+
+        public int MileageAtSale { get; set; }
+
         [Column(TypeName = "decimal(12,2)")]
         public decimal TotalAmount { get; set; }
 
@@ -23,9 +28,13 @@ namespace PartSphere.Models
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
         [MaxLength(50)]
-        public string PaymentMethod { get; set; } = "Cash"; // Cash, Credit
+        public string PaymentMethod { get; set; } = "Cash"; // Cash, Card
+
+        [MaxLength(50)]
+        public string PaymentStatus { get; set; } = "PAID"; // PAID, CREDIT
 
         // Navigation
         public ICollection<SalesItem> Items { get; set; } = new List<SalesItem>();
+        public Invoice? Invoice { get; set; }
     }
 }
