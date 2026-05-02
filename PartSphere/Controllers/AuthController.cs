@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PartSphere.DTOs;
 using PartSphere.Services;
+using System.Security.Claims;
 
 namespace PartSphere.Controllers
 {
@@ -26,6 +28,20 @@ namespace PartSphere.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var result = await _authService.LoginAsync(dto);
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _authService.GetMeAsync(userId);
             return Ok(result);
         }
     }
