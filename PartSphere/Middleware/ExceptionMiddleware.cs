@@ -3,9 +3,7 @@ using System.Text.Json;
 
 namespace PartSphere.Middleware
 {
-    /// <summary>
-    /// Global exception handling middleware for clean error responses.
-    /// </summary>
+    
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
@@ -22,6 +20,18 @@ namespace PartSphere.Middleware
             try
             {
                 await _next(context);
+
+                // Handle 403 Forbidden from [Authorize] when role doesn't match
+                if (context.Response.StatusCode == 403 && !context.Response.HasStarted)
+                {
+                    await WriteErrorResponse(context, HttpStatusCode.Forbidden,
+                        "You do not have permission to access this resource.");
+                }
+            }
+            catch (ForbiddenAccessException ex)
+            {
+                _logger.LogWarning(ex, "Forbidden access attempt");
+                await WriteErrorResponse(context, HttpStatusCode.Forbidden, ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -70,5 +80,12 @@ namespace PartSphere.Middleware
 
             await context.Response.WriteAsync(json);
         }
+    }
+
+    
+    public class ForbiddenAccessException : Exception
+    {
+        public ForbiddenAccessException(string message = "You do not have permission to access this resource.")
+            : base(message) { }
     }
 }
