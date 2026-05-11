@@ -53,9 +53,12 @@ namespace PartSphere.Services
             var vendor = new Vendor
             {
                 Name = dto.Name,
+                ContactPerson = dto.ContactPerson,
                 Contact = dto.Contact,
+                Phone = dto.Phone,
                 Address = dto.Address,
-                Email = dto.Email
+                Email = dto.Email,
+                Category = dto.Category
             };
 
             await _vendorRepo.AddAsync(vendor);
@@ -70,9 +73,12 @@ namespace PartSphere.Services
                 ?? throw new KeyNotFoundException("Vendor not found.");
 
             if (dto.Name != null) vendor.Name = dto.Name;
+            if (dto.ContactPerson != null) vendor.ContactPerson = dto.ContactPerson;
             if (dto.Contact != null) vendor.Contact = dto.Contact;
+            if (dto.Phone != null) vendor.Phone = dto.Phone;
             if (dto.Address != null) vendor.Address = dto.Address;
             if (dto.Email != null) vendor.Email = dto.Email;
+            if (dto.Category != null) vendor.Category = dto.Category;
 
             await _vendorRepo.UpdateAsync(vendor);
 
@@ -83,11 +89,12 @@ namespace PartSphere.Services
         {
             var vendor = await _vendorRepo.Query()
                 .Include(v => v.Parts)
+                .Include(v => v.PurchaseInvoices)
                 .FirstOrDefaultAsync(v => v.Id == id)
                 ?? throw new KeyNotFoundException("Vendor not found.");
 
-            if (vendor.Parts.Any())
-                throw new InvalidOperationException("Cannot delete vendor with existing parts. Remove parts first.");
+            if (vendor.Parts.Any() || vendor.PurchaseInvoices.Any())
+                throw new InvalidOperationException("Cannot delete vendor with existing parts or purchase history.");
 
             await _vendorRepo.DeleteAsync(vendor);
             _logger.LogInformation("Vendor deleted: {Id}", id);
@@ -97,9 +104,12 @@ namespace PartSphere.Services
         {
             Id = v.Id,
             Name = v.Name,
+            ContactPerson = v.ContactPerson,
             Contact = v.Contact,
+            Phone = v.Phone,
             Address = v.Address,
             Email = v.Email,
+            Category = v.Category,
             PartsCount = v.Parts?.Count ?? 0
         };
     }

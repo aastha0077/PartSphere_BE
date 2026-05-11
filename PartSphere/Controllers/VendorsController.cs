@@ -3,16 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using PartSphere.DTOs;
 using PartSphere.Services;
 
-namespace PartSphere.Controllers.Admin
+namespace PartSphere.Controllers
 {
     [ApiController]
-    [Route("api/admin/vendors")]
-    [Authorize(Roles = "Admin")]
-    public class AdminVendorController : ControllerBase
+    [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,Staff")]
+    public class VendorsController : ControllerBase
     {
         private readonly IVendorService _vendorService;
 
-        public AdminVendorController(IVendorService vendorService)
+        public VendorsController(IVendorService vendorService)
         {
             _vendorService = vendorService;
         }
@@ -32,6 +32,7 @@ namespace PartSphere.Controllers.Admin
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Create([FromBody] CreateVendorDto dto)
         {
             var vendor = await _vendorService.CreateAsync(dto);
@@ -39,6 +40,7 @@ namespace PartSphere.Controllers.Admin
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateVendorDto dto)
         {
             var vendor = await _vendorService.UpdateAsync(id, dto);
@@ -46,6 +48,7 @@ namespace PartSphere.Controllers.Admin
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Delete(int id)
         {
             await _vendorService.DeleteAsync(id);

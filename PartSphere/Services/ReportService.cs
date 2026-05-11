@@ -14,6 +14,7 @@ namespace PartSphere.Services
         Task<CustomerReportDto> GetCustomerReportAsync();
         Task<DashboardDto> GetDashboardStatsAsync();
         Task<IEnumerable<SalesReportItemDto>> GetSalesReportAsync(DateTime from, DateTime to);
+        Task<IEnumerable<MonthlySalesDto>> GetRevenueTrendAsync();
     }
 
     public class ReportService : IReportService
@@ -129,13 +130,13 @@ namespace PartSphere.Services
             var today = DateTime.UtcNow.Date;
             var startOfMonth = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-            var todayRevenue = await _context.SalesInvoices
+            var todayInvoices = await _context.SalesInvoices
                 .Where(s => s.Date >= today)
-                .SumAsync(s => s.TotalAmount);
+                .ToListAsync();
 
-            var monthRevenue = await _context.SalesInvoices
+            var monthInvoices = await _context.SalesInvoices
                 .Where(s => s.Date >= startOfMonth)
-                .SumAsync(s => s.TotalAmount);
+                .ToListAsync();
 
             return new DashboardDto
             {
@@ -143,8 +144,10 @@ namespace PartSphere.Services
                 TotalCustomers = await _context.Customers.CountAsync(),
                 TotalVendors = await _context.Vendors.CountAsync(),
                 TotalStaff = await _context.Users.CountAsync(u => u.Role == UserRole.Staff),
-                TodayRevenue = todayRevenue,
-                MonthRevenue = monthRevenue,
+                TodayRevenue = todayInvoices.Sum(s => s.TotalAmount),
+                MonthRevenue = monthInvoices.Sum(s => s.TotalAmount),
+                TodaySalesCount = todayInvoices.Count,
+                MonthSalesCount = monthInvoices.Count,
                 LowStockCount = await _context.VehicleParts.CountAsync(p => p.StockQuantity < 10),
                 PendingAppointments = await _context.Appointments.CountAsync(a => a.Status == AppointmentStatus.Pending),
                 PendingCredits = await _context.CreditPayments.CountAsync(c => c.Status != CreditStatus.Paid),
@@ -194,6 +197,33 @@ namespace PartSphere.Services
                 Date = s.Date,
                 ItemCount = s.Items.Count
             });
+        }
+
+        public async Task<IEnumerable<MonthlySalesDto>> GetRevenueTrendAsync()
+        {
+            var now = DateTime.UtcNow;
+            var start = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+            
+            var invoices = await _context.SalesInvoices
+                .Where(s => s.Date >= start)
+                .ToListAsync();
+
+            var trends = new List<MonthlySalesDto>();
+            for (int i = 0; i < 12; i++)
+            {
+                var monthStart = start.AddMonths(i);
+                var monthEnd = monthStart.AddMonths(1);
+                var monthInvoices = invoices.Where(s => s.Date >= monthStart && s.Date < monthEnd);
+
+                trends.Add(new MonthlySalesDto
+                {
+                    Month = monthStart.ToString("MMM"),
+                    Total = monthInvoices.Sum(s => s.TotalAmount),
+                    Count = monthInvoices.Count()
+                });
+            }
+
+            return trends;
         }
     }
 }

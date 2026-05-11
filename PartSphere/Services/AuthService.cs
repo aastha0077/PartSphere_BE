@@ -18,6 +18,8 @@ namespace PartSphere.Services
         Task<IEnumerable<UserResponseDto>> GetStaffAsync();
         Task<UserResponseDto> UpdateStaffAsync(int id, CreateStaffDto dto);
         Task DeleteStaffAsync(int id);
+        Task ToggleStaffStatusAsync(int id);
+        Task<AuthResponseDto> GetMeAsync(int userId);
     }
 
     public class AuthService : IAuthService
@@ -44,17 +46,26 @@ namespace PartSphere.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
+            // Validate inputs
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                throw new ArgumentException("Name is required.");
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                throw new ArgumentException("Email is required.");
+            if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+                throw new ArgumentException("Password must be at least 6 characters.");
+
             // Check if email already exists
             var existing = await _userRepo.Query()
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (existing != null)
                 throw new ArgumentException("Email is already registered.");
 
-            // Create user with Customer role
+            // SECURITY: Public registration ALWAYS creates Customer role only.
+            // Admin and Staff accounts can only be created by an Admin.
             var user = new User
             {
-                Name = dto.Name,
-                Email = dto.Email,
+                Name = dto.Name.Trim(),
+                Email = dto.Email.Trim().ToLower(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = UserRole.Customer
             };
@@ -127,17 +138,20 @@ namespace PartSphere.Services
             if (existing != null)
                 throw new ArgumentException("Email is already in use.");
 
+            if (string.IsNullOrEmpty(dto.Password))
+                throw new ArgumentException("Password is required for registration.");
+
             var user = new User
             {
                 Name = dto.Name,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = UserRole.Staff
+                Role = Enum.TryParse<UserRole>(dto.Role, true, out var role) ? role : UserRole.Staff
             };
 
             await _userRepo.AddAsync(user);
 
-            _logger.LogInformation("Staff created: {Email}", dto.Email);
+            _logger.LogInformation("Staff created: {Email} as {Role}", dto.Email, user.Role);
 
             return MapToUserDto(user);
         }
@@ -145,7 +159,7 @@ namespace PartSphere.Services
         public async Task<IEnumerable<UserResponseDto>> GetStaffAsync()
         {
             var staff = await _userRepo.Query()
-                .Where(u => u.Role == UserRole.Staff)
+                .Where(u => u.Role == UserRole.Staff || u.Role == UserRole.Admin)
                 .OrderBy(u => u.Name)
                 .ToListAsync();
 
@@ -157,11 +171,14 @@ namespace PartSphere.Services
             var user = await _userRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Staff member not found.");
 
-            if (user.Role != UserRole.Staff)
-                throw new ArgumentException("User is not a staff member.");
+            if (user.Role != UserRole.Staff && user.Role != UserRole.Admin)
+                throw new ArgumentException("User is not a staff member or administrator.");
 
             user.Name = dto.Name;
             user.Email = dto.Email;
+            
+            if (Enum.TryParse<UserRole>(dto.Role, true, out var newRole))
+                user.Role = newRole;
 
             if (!string.IsNullOrEmpty(dto.Password))
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -175,12 +192,37 @@ namespace PartSphere.Services
         {
             var user = await _userRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Staff member not found.");
+            await _userRepo.DeleteAsync(user);
+        }
 
-            if (user.Role != UserRole.Staff)
-                throw new ArgumentException("User is not a staff member.");
+        public async Task ToggleStaffStatusAsync(int id)
+        {
+            var user = await _userRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Staff member not found.");
 
-            user.IsActive = false;
+            if (user.Role != UserRole.Staff && user.Role != UserRole.Admin)
+                throw new ArgumentException("User is not a staff member or administrator.");
+
+            user.IsActive = !user.IsActive;
             await _userRepo.UpdateAsync(user);
+        }
+
+        public async Task<AuthResponseDto> GetMeAsync(int userId)
+        {
+            var user = await _userRepo.Query()
+                .Include(u => u.Customer)
+                .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new KeyNotFoundException("User not found.");
+
+            return new AuthResponseDto
+            {
+                Token = "", // Token not needed for GetMe
+                Role = user.Role.ToString(),
+                Name = user.Name,
+                Email = user.Email,
+                UserId = user.Id,
+                CustomerId = user.Customer?.Id
+            };
         }
 
         private static UserResponseDto MapToUserDto(User user) => new()

@@ -3,24 +3,24 @@ using Microsoft.AspNetCore.Mvc;
 using PartSphere.DTOs;
 using PartSphere.Services;
 
-namespace PartSphere.Controllers.Admin
+namespace PartSphere.Controllers
 {
     [ApiController]
-    [Route("api/admin/purchases")]
-    [Authorize(Roles = "Admin")]
-    public class AdminPurchaseController : ControllerBase
+    [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,Staff")]
+    public class PurchasesController : ControllerBase
     {
         private readonly IPurchaseService _purchaseService;
 
-        public AdminPurchaseController(IPurchaseService purchaseService)
+        public PurchasesController(IPurchaseService purchaseService)
         {
             _purchaseService = purchaseService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int? vendorId)
         {
-            var purchases = await _purchaseService.GetAllAsync();
+            var purchases = await _purchaseService.GetAllAsync(vendorId);
             return Ok(purchases);
         }
 

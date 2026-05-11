@@ -44,5 +44,12 @@ namespace PartSphere.Controllers.Admin
             await _authService.DeleteStaffAsync(id);
             return NoContent();
         }
+
+        [HttpPatch("{id}/toggle-status")]
+        public async Task<IActionResult> ToggleStaffStatus(int id)
+        {
+            await _authService.ToggleStaffStatusAsync(id);
+            return Ok();
+        }
     }
 }

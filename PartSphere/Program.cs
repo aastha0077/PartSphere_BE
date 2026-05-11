@@ -7,6 +7,7 @@ using PartSphere.Helpers;
 using PartSphere.Middleware;
 using PartSphere.Repositories;
 using PartSphere.Services;
+using PartSphere.BackgroundServices;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,14 +29,20 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IPartRequestService, PartRequestService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICreditService, CreditService>();
+builder.Services.AddScoped<IAIService, AIService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+
+// QuestPDF License initialization
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 // ===== HELPERS =====
 builder.Services.AddSingleton<JwtHelper>();
-builder.Services.AddScoped<IEmailService, EmailService>();
 
 // ===== JWT AUTHENTICATION =====
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -54,7 +61,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("StaffOnly", policy => policy.RequireRole("Staff"));
+    options.AddPolicy("StaffOrAdmin", policy => policy.RequireRole("Admin", "Staff"));
+    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+    options.AddPolicy("AllRoles", policy => policy.RequireRole("Admin", "Staff", "Customer"));
+});
 
 // ===== CORS (Allow React Frontend) =====
 builder.Services.AddCors(options =>
@@ -67,6 +81,8 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+
+builder.Services.AddHostedService<DailyCronService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -16,6 +16,7 @@ namespace PartSphere.Services
         Task<VehicleDto> CreateAsync(CreateVehicleDto dto);
         Task<VehicleDto> UpdateAsync(int id, UpdateVehicleDto dto);
         Task DeleteAsync(int id);
+        Task<IEnumerable<VehicleDto>> SearchAsync(string query);
     }
 
     public class VehicleService : IVehicleService
@@ -111,6 +112,22 @@ namespace PartSphere.Services
                 ?? throw new KeyNotFoundException("Vehicle not found.");
 
             await _vehicleRepo.DeleteAsync(vehicle);
+        }
+
+        public async Task<IEnumerable<VehicleDto>> SearchAsync(string query)
+        {
+            var q = query.ToLower().Trim();
+
+            var vehicles = await _vehicleRepo.Query()
+                .Include(v => v.Customer)
+                .Where(v =>
+                    v.VehicleNumber.ToLower().Contains(q) ||
+                    v.Model.ToLower().Contains(q) ||
+                    v.Brand.ToLower().Contains(q))
+                .OrderBy(v => v.Brand)
+                .ToListAsync();
+
+            return vehicles.Select(MapToDto);
         }
 
         private static VehicleDto MapToDto(Vehicle v) => new()

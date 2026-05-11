@@ -13,8 +13,19 @@ namespace PartSphere.DTOs
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
         public DateTime Date { get; set; }
         public List<SalesItemDto> Items { get; set; } = new();
+    }
+
+    public class InvoiceDto
+    {
+        public int Id { get; set; }
+        public int OrderId { get; set; }
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public DateTime GeneratedDate { get; set; }
+        public string? PDFUrl { get; set; }
+        public string? SentToEmail { get; set; }
     }
 
     public class SalesItemDto
@@ -34,6 +45,9 @@ namespace PartSphere.DTOs
 
         [Required, MaxLength(50)]
         public string PaymentMethod { get; set; } = "Cash";
+
+        [Required, MaxLength(50)]
+        public string PaymentStatus { get; set; } = "PAID"; // PAID, CREDIT
 
         [Required]
         public List<CreateSalesItemDto> Items { get; set; } = new();

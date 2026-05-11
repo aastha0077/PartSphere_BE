@@ -31,6 +31,7 @@ namespace PartSphere.Services
         {
             var appointments = await _appointmentRepo.Query()
                 .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
                 .OrderByDescending(a => a.Date)
                 .ToListAsync();
 
@@ -41,6 +42,7 @@ namespace PartSphere.Services
         {
             var appointments = await _appointmentRepo.Query()
                 .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
                 .Where(a => a.CustomerId == customerId)
                 .OrderByDescending(a => a.Date)
                 .ToListAsync();
@@ -52,6 +54,7 @@ namespace PartSphere.Services
         {
             var appointment = await _appointmentRepo.Query()
                 .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
                 .FirstOrDefaultAsync(a => a.Id == id)
                 ?? throw new KeyNotFoundException("Appointment not found.");
 
@@ -66,6 +69,8 @@ namespace PartSphere.Services
             var appointment = new Appointment
             {
                 CustomerId = dto.CustomerId,
+                VehicleId = dto.VehicleId,
+                ServiceType = dto.ServiceType,
                 Date = dto.Date,
                 Description = dto.Description,
                 Status = AppointmentStatus.Pending
@@ -99,6 +104,9 @@ namespace PartSphere.Services
             Id = a.Id,
             CustomerId = a.CustomerId,
             CustomerName = a.Customer?.Name ?? "",
+            VehicleId = a.VehicleId,
+            VehicleInfo = a.Vehicle != null ? $"{a.Vehicle.Brand} {a.Vehicle.Model} ({a.Vehicle.VehicleNumber})" : "No Vehicle",
+            ServiceType = a.ServiceType,
             Date = a.Date,
             Status = a.Status.ToString(),
             Description = a.Description,

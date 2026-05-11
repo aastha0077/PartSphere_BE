@@ -8,9 +8,11 @@ namespace PartSphere.DTOs
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public int? UserId { get; set; }
         public int VehicleCount { get; set; }
         public decimal TotalSpent { get; set; }
+        public int LoyaltyPoints { get; set; }
     }
 
     public class CreateCustomerDto
@@ -23,6 +25,9 @@ namespace PartSphere.DTOs
 
         [MaxLength(300)]
         public string Address { get; set; } = string.Empty;
+
+        [Required, EmailAddress, MaxLength(150)]
+        public string Email { get; set; } = string.Empty;
     }
 
     public class UpdateCustomerDto
@@ -35,6 +40,9 @@ namespace PartSphere.DTOs
 
         [MaxLength(300)]
         public string? Address { get; set; }
+
+        [EmailAddress, MaxLength(150)]
+        public string? Email { get; set; }
     }
 
     public class CustomerHistoryDto
@@ -53,6 +61,7 @@ namespace PartSphere.DTOs
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public List<string> VehicleNumbers { get; set; } = new();
     }
 }

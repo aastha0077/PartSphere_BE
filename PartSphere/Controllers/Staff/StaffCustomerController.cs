@@ -44,5 +44,26 @@ namespace PartSphere.Controllers.Staff
             var customer = await _customerService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerDto dto)
+        {
+            var customer = await _customerService.UpdateAsync(id, dto);
+            return Ok(customer);
+        }
+
+        [HttpGet("{id}/history")]
+        public async Task<IActionResult> GetHistory(int id)
+        {
+            var history = await _customerService.GetHistoryAsync(id);
+            return Ok(history);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _customerService.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }

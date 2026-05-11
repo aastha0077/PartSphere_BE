@@ -2,12 +2,43 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PartSphere.DTOs
 {
+    // ===== PART REQUEST =====
+    public class PartRequestDto
+    {
+        public int Id { get; set; }
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
+        public string PartName { get; set; } = string.Empty;
+        public string? Brand { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string? StaffNotes { get; set; }
+    }
+
+    public class CreatePartRequestDto
+    {
+        public int CustomerId { get; set; }
+
+        [Required, MaxLength(200)]
+        public string PartName { get; set; } = string.Empty;
+
+        [MaxLength(100)]
+        public string? Brand { get; set; }
+
+        [Required, MaxLength(1000)]
+        public string Description { get; set; } = string.Empty;
+    }
+
     // ===== APPOINTMENT =====
     public class AppointmentDto
     {
         public int Id { get; set; }
         public int CustomerId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
+        public int? VehicleId { get; set; }
+        public string VehicleInfo { get; set; } = string.Empty;
+        public string ServiceType { get; set; } = string.Empty;
         public DateTime Date { get; set; }
         public string Status { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
@@ -17,11 +48,15 @@ namespace PartSphere.DTOs
     public class CreateAppointmentDto
     {
         public int CustomerId { get; set; }
+        public int? VehicleId { get; set; }
+
+        [Required, MaxLength(100)]
+        public string ServiceType { get; set; } = string.Empty;
 
         [Required]
         public DateTime Date { get; set; }
 
-        [Required, MaxLength(500)]
+        [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
     }
 
@@ -99,6 +134,8 @@ namespace PartSphere.DTOs
         public int TotalStaff { get; set; }
         public decimal TodayRevenue { get; set; }
         public decimal MonthRevenue { get; set; }
+        public int TodaySalesCount { get; set; }
+        public int MonthSalesCount { get; set; }
         public int LowStockCount { get; set; }
         public int PendingAppointments { get; set; }
         public int PendingCredits { get; set; }

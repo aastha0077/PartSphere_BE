@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PartSphere.DTOs;
 using PartSphere.Services;
 
-namespace PartSphere.Controllers.Customer
+namespace PartSphere.Controllers
 {
     [ApiController]
     [Route("api/customer")]
@@ -16,19 +16,22 @@ namespace PartSphere.Controllers.Customer
         private readonly IReviewService _reviewService;
         private readonly INotificationService _notificationService;
         private readonly IPartService _partService;
+        private readonly IPartRequestService _partRequestService;
 
         public CustomerController(
             ICustomerService customerService,
             IAppointmentService appointmentService,
             IReviewService reviewService,
             INotificationService notificationService,
-            IPartService partService)
+            IPartService partService,
+            IPartRequestService partRequestService)
         {
             _customerService = customerService;
             _appointmentService = appointmentService;
             _reviewService = reviewService;
             _notificationService = notificationService;
             _partService = partService;
+            _partRequestService = partRequestService;
         }
 
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -47,15 +50,15 @@ namespace PartSphere.Controllers.Customer
         [HttpGet("parts")]
         public async Task<IActionResult> BrowseParts()
         {
-            var parts = await _partService.GetAllAsync();
-            return Ok(parts);
+            var parts = await _partService.GetAllAsync(null, null, 1, 100);
+            return Ok(parts.Items);
         }
 
         [HttpGet("parts/search")]
         public async Task<IActionResult> SearchParts([FromQuery] string query)
         {
-            var parts = await _partService.SearchAsync(query);
-            return Ok(parts);
+            var parts = await _partService.GetAllAsync(query, null, 1, 100);
+            return Ok(parts.Items);
         }
 
         // ===== APPOINTMENTS =====
@@ -127,6 +130,28 @@ namespace PartSphere.Controllers.Customer
             if (customer == null) return NotFound("Customer profile not found.");
             var history = await _customerService.GetHistoryAsync(customer.Id);
             return Ok(history);
+        }
+
+        // ===== PART REQUESTS =====
+        [HttpGet("part-requests")]
+        public async Task<IActionResult> GetMyPartRequests()
+        {
+            var userId = GetUserId();
+            var customer = await _customerService.GetByUserIdAsync(userId);
+            if (customer == null) return NotFound("Customer profile not found.");
+            var requests = await _partRequestService.GetByCustomerAsync(customer.Id);
+            return Ok(requests);
+        }
+
+        [HttpPost("part-requests")]
+        public async Task<IActionResult> RequestPart([FromBody] CreatePartRequestDto dto)
+        {
+            var userId = GetUserId();
+            var customer = await _customerService.GetByUserIdAsync(userId);
+            if (customer == null) return NotFound("Customer profile not found.");
+            dto.CustomerId = customer.Id;
+            var request = await _partRequestService.CreateAsync(dto);
+            return Ok(request);
         }
     }
 }

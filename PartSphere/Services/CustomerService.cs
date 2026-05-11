@@ -59,7 +59,8 @@ namespace PartSphere.Services
             {
                 Name = dto.Name,
                 Phone = dto.Phone,
-                Address = dto.Address
+                Address = dto.Address,
+                Email = dto.Email
             };
 
             await _customerRepo.AddAsync(customer);
@@ -76,6 +77,7 @@ namespace PartSphere.Services
             if (dto.Name != null) customer.Name = dto.Name;
             if (dto.Phone != null) customer.Phone = dto.Phone;
             if (dto.Address != null) customer.Address = dto.Address;
+            if (dto.Email != null) customer.Email = dto.Email;
 
             await _customerRepo.UpdateAsync(customer);
 
@@ -104,6 +106,7 @@ namespace PartSphere.Services
                     c.Id == idQuery ||
                     c.Name.ToLower().Contains(q) ||
                     c.Phone.ToLower().Contains(q) ||
+                    c.Email.ToLower().Contains(q) ||
                     c.Vehicles.Any(v => v.VehicleNumber.ToLower().Contains(q)))
                 .ToListAsync();
 
@@ -113,6 +116,7 @@ namespace PartSphere.Services
                 Name = c.Name,
                 Phone = c.Phone,
                 Address = c.Address,
+                Email = c.Email,
                 VehicleNumbers = c.Vehicles.Select(v => v.VehicleNumber).ToList()
             });
         }
@@ -200,9 +204,11 @@ namespace PartSphere.Services
             Name = c.Name,
             Phone = c.Phone,
             Address = c.Address,
+            Email = c.Email,
             UserId = c.UserId,
             VehicleCount = c.Vehicles?.Count ?? 0,
-            TotalSpent = c.SalesInvoices?.Sum(s => s.TotalAmount) ?? 0
+            TotalSpent = c.SalesInvoices?.Sum(s => s.TotalAmount) ?? 0,
+            LoyaltyPoints = c.LoyaltyPoints
         };
     }
 }

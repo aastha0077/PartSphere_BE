@@ -2,32 +2,33 @@ using Microsoft.EntityFrameworkCore;
 using PartSphere.DTOs;
 using PartSphere.Models;
 using PartSphere.Repositories;
+using PartSphere.Data;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Handles purchase invoices and automatically increases stock.
-    /// </summary>
     public interface IPurchaseService
     {
         Task<PurchaseInvoiceDto> GetByIdAsync(int id);
-        Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync();
+        Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync(int? vendorId = null);
         Task<PurchaseInvoiceDto> CreateAsync(CreatePurchaseInvoiceDto dto);
     }
 
     public class PurchaseService : IPurchaseService
     {
+        private readonly AppDbContext _context;
         private readonly IRepository<PurchaseInvoice> _purchaseRepo;
         private readonly IRepository<Vendor> _vendorRepo;
         private readonly IRepository<VehiclePart> _partRepo;
         private readonly ILogger<PurchaseService> _logger;
 
         public PurchaseService(
+            AppDbContext context,
             IRepository<PurchaseInvoice> purchaseRepo,
             IRepository<Vendor> vendorRepo,
             IRepository<VehiclePart> partRepo,
             ILogger<PurchaseService> logger)
         {
+            _context = context;
             _purchaseRepo = purchaseRepo;
             _vendorRepo = vendorRepo;
             _partRepo = partRepo;
@@ -46,12 +47,20 @@ namespace PartSphere.Services
             return MapToDto(invoice);
         }
 
-        public async Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync()
+        public async Task<IEnumerable<PurchaseInvoiceDto>> GetAllAsync(int? vendorId = null)
         {
-            var invoices = await _purchaseRepo.Query()
+            var query = _purchaseRepo.Query()
                 .Include(p => p.Vendor)
                 .Include(p => p.Items)
                     .ThenInclude(i => i.VehiclePart)
+                .AsQueryable();
+
+            if (vendorId.HasValue)
+            {
+                query = query.Where(p => p.VendorId == vendorId.Value);
+            }
+
+            var invoices = await query
                 .OrderByDescending(p => p.Date)
                 .ToListAsync();
 
@@ -63,43 +72,57 @@ namespace PartSphere.Services
             if (!await _vendorRepo.ExistsAsync(dto.VendorId))
                 throw new KeyNotFoundException("Vendor not found.");
 
-            var invoice = new PurchaseInvoice
+            if (dto.Items == null || !dto.Items.Any())
+                throw new ArgumentException("Purchase must contain at least one item.");
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                VendorId = dto.VendorId,
-                Notes = dto.Notes,
-                Date = DateTime.UtcNow
-            };
-
-            decimal totalAmount = 0;
-
-            foreach (var itemDto in dto.Items)
-            {
-                var part = await _partRepo.GetByIdAsync(itemDto.VehiclePartId)
-                    ?? throw new KeyNotFoundException($"Part {itemDto.VehiclePartId} not found.");
-
-                // INCREASE STOCK
-                part.StockQuantity += itemDto.Quantity;
-                await _partRepo.UpdateAsync(part);
-
-                var itemCost = itemDto.UnitCost * itemDto.Quantity;
-                totalAmount += itemCost;
-
-                invoice.Items.Add(new PurchaseItem
+                var invoice = new PurchaseInvoice
                 {
-                    VehiclePartId = part.Id,
-                    Quantity = itemDto.Quantity,
-                    UnitCost = itemDto.UnitCost,
-                    TotalCost = itemCost
-                });
+                    VendorId = dto.VendorId,
+                    Notes = dto.Notes,
+                    Date = DateTime.UtcNow
+                };
+
+                decimal totalAmount = 0;
+
+                foreach (var itemDto in dto.Items)
+                {
+                    var part = await _partRepo.GetByIdAsync(itemDto.VehiclePartId)
+                        ?? throw new KeyNotFoundException($"Part {itemDto.VehiclePartId} not found.");
+
+                    part.StockQuantity += itemDto.Quantity;
+
+                    var itemCost = itemDto.UnitCost * itemDto.Quantity;
+                    totalAmount += itemCost;
+
+                    invoice.Items.Add(new PurchaseItem
+                    {
+                        VehiclePartId = part.Id,
+                        Quantity = itemDto.Quantity,
+                        UnitCost = itemDto.UnitCost,
+                        TotalCost = itemCost
+                    });
+                }
+
+                invoice.TotalAmount = totalAmount;
+
+                await _purchaseRepo.AddAsync(invoice);
+                
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("Purchase Invoice created: {InvoiceId} for Vendor {VendorId}", invoice.Id, invoice.VendorId);
+
+                return await GetByIdAsync(invoice.Id);
             }
-
-            invoice.TotalAmount = totalAmount;
-
-            await _purchaseRepo.AddAsync(invoice);
-
-            _logger.LogInformation("Purchase Invoice created: {InvoiceId} for Vendor {VendorId}", invoice.Id, invoice.VendorId);
-
-            return await GetByIdAsync(invoice.Id);
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Transaction failed while creating purchase.");
+                throw;
+            }
         }
 
         private static PurchaseInvoiceDto MapToDto(PurchaseInvoice p) => new()

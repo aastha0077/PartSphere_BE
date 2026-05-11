@@ -6,9 +6,12 @@ namespace PartSphere.DTOs
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string ContactPerson { get; set; } = string.Empty;
         public string Contact { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public int PartsCount { get; set; }
     }
 
@@ -17,14 +20,23 @@ namespace PartSphere.DTOs
         [Required, MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 
+        [MaxLength(100)]
+        public string ContactPerson { get; set; } = string.Empty;
+
         [MaxLength(50)]
         public string Contact { get; set; } = string.Empty;
+
+        [MaxLength(20)]
+        public string Phone { get; set; } = string.Empty;
 
         [MaxLength(300)]
         public string Address { get; set; } = string.Empty;
 
         [MaxLength(150)]
         public string Email { get; set; } = string.Empty;
+
+        [MaxLength(100)]
+        public string Category { get; set; } = "General";
     }
 
     public class UpdateVendorDto
@@ -32,13 +44,22 @@ namespace PartSphere.DTOs
         [MaxLength(100)]
         public string? Name { get; set; }
 
+        [MaxLength(100)]
+        public string? ContactPerson { get; set; }
+
         [MaxLength(50)]
         public string? Contact { get; set; }
+
+        [MaxLength(20)]
+        public string? Phone { get; set; }
 
         [MaxLength(300)]
         public string? Address { get; set; }
 
         [MaxLength(150)]
         public string? Email { get; set; }
+
+        [MaxLength(100)]
+        public string? Category { get; set; }
     }
 }

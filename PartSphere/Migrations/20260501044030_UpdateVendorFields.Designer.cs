@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PartSphere.Data;
@@ -11,9 +12,11 @@ using PartSphere.Data;
 namespace PartSphere.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260501044030_UpdateVendorFields")]
+    partial class UpdateVendorFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,23 +47,13 @@ namespace PartSphere.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("VehicleId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("VehicleId");
 
                     b.ToTable("Appointments");
                 });
@@ -146,41 +139,6 @@ namespace PartSphere.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("PartSphere.Models.Invoice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("GeneratedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("PDFUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<int>("SalesInvoiceId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SentToEmail")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SalesInvoiceId")
-                        .IsUnique();
-
-                    b.ToTable("Invoices");
-                });
-
             modelBuilder.Entity("PartSphere.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
@@ -212,49 +170,6 @@ namespace PartSphere.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("PartSphere.Models.PartRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Brand")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("PartName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("StaffNotes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("PartRequests");
                 });
 
             modelBuilder.Entity("PartSphere.Models.PurchaseInvoice", b =>
@@ -382,13 +297,13 @@ namespace PartSphere.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<string>("PaymentStatus")
+                    b.Property<int>("StaffId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<int>("StaffId")
-                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(12,2)");
@@ -645,13 +560,7 @@ namespace PartSphere.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PartSphere.Models.Vehicle", "Vehicle")
-                        .WithMany()
-                        .HasForeignKey("VehicleId");
-
                     b.Navigation("Customer");
-
-                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("PartSphere.Models.CreditPayment", b =>
@@ -682,17 +591,6 @@ namespace PartSphere.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PartSphere.Models.Invoice", b =>
-                {
-                    b.HasOne("PartSphere.Models.SalesInvoice", "SalesInvoice")
-                        .WithOne("Invoice")
-                        .HasForeignKey("PartSphere.Models.Invoice", "SalesInvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SalesInvoice");
-                });
-
             modelBuilder.Entity("PartSphere.Models.Notification", b =>
                 {
                     b.HasOne("PartSphere.Models.User", "User")
@@ -700,17 +598,6 @@ namespace PartSphere.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("PartSphere.Models.PartRequest", b =>
-                {
-                    b.HasOne("PartSphere.Models.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("PartSphere.Models.PurchaseInvoice", b =>
@@ -840,8 +727,6 @@ namespace PartSphere.Migrations
 
             modelBuilder.Entity("PartSphere.Models.SalesInvoice", b =>
                 {
-                    b.Navigation("Invoice");
-
                     b.Navigation("Items");
                 });
 

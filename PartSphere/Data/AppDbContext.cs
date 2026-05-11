@@ -20,6 +20,8 @@ namespace PartSphere.Data
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<CreditPayment> CreditPayments => Set<CreditPayment>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<Invoice> Invoices => Set<Invoice>();
+        public DbSet<PartRequest> PartRequests => Set<PartRequest>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,6 +106,11 @@ namespace PartSphere.Data
                     .WithOne(i => i.SalesInvoice)
                     .HasForeignKey(i => i.SalesInvoiceId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(s => s.Invoice)
+                    .WithOne(i => i.SalesInvoice)
+                    .HasForeignKey<Invoice>(i => i.SalesInvoiceId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ===== SALES ITEM =====
@@ -154,6 +161,15 @@ namespace PartSphere.Data
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.Property(a => a.Status).HasConversion<string>();
+            });
+
+            // ===== PART REQUEST =====
+            modelBuilder.Entity<PartRequest>(entity =>
+            {
+                entity.HasOne(pr => pr.Customer)
+                    .WithMany()
+                    .HasForeignKey(pr => pr.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PartSphere.DTOs
 {
-    // ===== AUTH =====
     public class RegisterDto
     {
         [Required, MaxLength(100)]
@@ -51,6 +50,8 @@ namespace PartSphere.DTOs
 
         [Required, MinLength(6)]
         public string Password { get; set; } = string.Empty;
+
+        public string Role { get; set; } = string.Empty;
     }
 
     public class UserResponseDto
