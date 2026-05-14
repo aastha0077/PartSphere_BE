@@ -31,5 +31,8 @@ namespace PartSphere.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? PaidDate { get; set; }
+
+        /// <summary>Last time an overdue credit reminder email was sent (cooldown applies).</summary>
+        public DateTime? LastCreditReminderSentAt { get; set; }
     }
 }

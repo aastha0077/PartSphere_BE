@@ -20,17 +20,20 @@ namespace PartSphere.Services
         private readonly IRepository<VehiclePart> _partRepo;
         private readonly IRepository<Vendor> _vendorRepo;
         private readonly INotificationService _notificationService;
+        private readonly IAdminLowStockNotifier _adminLowStockNotifier;
         private readonly ILogger<PartService> _logger;
 
         public PartService(
             IRepository<VehiclePart> partRepo,
             IRepository<Vendor> vendorRepo,
             INotificationService notificationService,
+            IAdminLowStockNotifier adminLowStockNotifier,
             ILogger<PartService> logger)
         {
             _partRepo = partRepo;
             _vendorRepo = vendorRepo;
             _notificationService = notificationService;
+            _adminLowStockNotifier = adminLowStockNotifier;
             _logger = logger;
         }
 
@@ -90,7 +93,7 @@ namespace PartSphere.Services
             };
 
             await _partRepo.AddAsync(part);
-            await CheckLowStock(part);
+            await CheckLowStockAsync(part, previousStockQuantity: null);
 
             return MapToDto(part);
         }
@@ -108,6 +111,8 @@ namespace PartSphere.Services
             if (!await _vendorRepo.ExistsAsync(dto.VendorId))
                 throw new KeyNotFoundException("Vendor not found.");
 
+            var previousQty = part.StockQuantity;
+
             part.Name = dto.Name;
             part.Brand = dto.Brand;
             part.Category = dto.Category;
@@ -120,7 +125,7 @@ namespace PartSphere.Services
             try
             {
                 await _partRepo.UpdateAsync(part);
-                await CheckLowStock(part);
+                await CheckLowStockAsync(part, previousQty);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -139,11 +144,13 @@ namespace PartSphere.Services
             if (!part.RowVersion.SequenceEqual(dto.RowVersion))
                 throw new DbUpdateConcurrencyException("Concurrency conflict. Stock update rejected.");
 
+            var previousQty = part.StockQuantity;
+
             part.StockQuantity = dto.StockQuantity;
             part.UpdatedAt = DateTime.UtcNow;
 
             await _partRepo.UpdateAsync(part);
-            await CheckLowStock(part);
+            await CheckLowStockAsync(part, previousQty);
 
             return await GetByIdAsync(part.Id);
         }
@@ -159,14 +166,20 @@ namespace PartSphere.Services
             await _partRepo.UpdateAsync(part);
         }
 
-        private async Task CheckLowStock(VehiclePart part)
+        private async Task CheckLowStockAsync(VehiclePart part, int? previousStockQuantity)
         {
-            if (part.StockQuantity < 10)
-            {
-                await _notificationService.CreateAsync(
-                    $"LOW STOCK ALERT: {part.Name} ({part.Brand}) is running low ({part.StockQuantity} left).",
-                    NotificationType.LowStock);
-            }
+            if (part.StockQuantity >= 10)
+                return;
+
+            await _notificationService.CreateAsync(
+                $"LOW STOCK ALERT: {part.Name} ({part.Brand}) is running low ({part.StockQuantity} left).",
+                NotificationType.LowStock);
+
+            await _adminLowStockNotifier.NotifyIfCrossedLowThresholdAsync(
+                part.Name,
+                part.Brand,
+                part.StockQuantity,
+                previousStockQuantity);
         }
 
         private static PartDto MapToDto(VehiclePart p) => new()

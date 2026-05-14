@@ -11,6 +11,7 @@ namespace PartSphere.Services
         Task SendEmailAsync(string to, string subject, string htmlBody);
         Task SendInvoiceEmailAsync(string to, string customerName, int invoiceId, decimal total);
         Task SendCreditReminderAsync(string to, string customerName, decimal amount, DateTime dueDate);
+        Task SendLowStockAlertAsync(string to, string partName, string brand, int currentStock);
     }
 
     public class EmailService : IEmailService
@@ -121,6 +122,30 @@ namespace PartSphere.Services
                             <p style='color: #f5576c;'><strong>Status: Overdue</strong></p>
                         </div>
                         <p>Please settle your payment at your earliest convenience.</p>
+                    </div>
+                </body>
+                </html>";
+
+            await SendEmailAsync(to, subject, body);
+        }
+
+        public async Task SendLowStockAlertAsync(string to, string partName, string brand, int currentStock)
+        {
+            var subject = "PartSphere - Low stock alert (Admin)";
+            var body = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <div style='background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); padding: 24px; text-align: center;'>
+                        <h1 style='color: white; margin: 0; font-size: 1.25rem;'>Low stock alert</h1>
+                    </div>
+                    <div style='padding: 24px; background: #f8f9fa;'>
+                        <p>A vehicle part has dropped <strong>below 10 units</strong> in inventory.</p>
+                        <div style='background: white; padding: 16px; border-radius: 8px; margin: 16px 0;'>
+                            <p><strong>Part:</strong> {System.Net.WebUtility.HtmlEncode(partName)}</p>
+                            <p><strong>Brand:</strong> {System.Net.WebUtility.HtmlEncode(brand)}</p>
+                            <p style='color: #c0392b;'><strong>Current stock:</strong> {currentStock}</p>
+                        </div>
+                        <p style='color: #666;'>Please review purchasing or transfers in the admin dashboard.</p>
                     </div>
                 </body>
                 </html>";

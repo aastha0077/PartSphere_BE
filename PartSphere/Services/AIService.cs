@@ -27,7 +27,9 @@ namespace PartSphere.Services
             var salesHistory = await _context.SalesInvoices
                 .Where(s => s.VehicleId == vehicleId && s.PaymentStatus == "PAID")
                 .Include(s => s.Items)
-                .ThenInclude(i => i.VehiclePart)
+                    .ThenInclude(i => i.VehiclePart)
+                .Include(s => s.Items)
+                    .ThenInclude(i => i.SalesInvoice!)
                 .OrderByDescending(s => s.Date)
                 .ToListAsync();
 

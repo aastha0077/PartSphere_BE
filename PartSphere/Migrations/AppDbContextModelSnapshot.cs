@@ -88,6 +88,9 @@ namespace PartSphere.Migrations
                     b.Property<DateTime?>("PaidDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("LastCreditReminderSentAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("SalesInvoiceId")
                         .HasColumnType("integer");
 
