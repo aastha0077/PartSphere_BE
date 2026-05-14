@@ -24,6 +24,7 @@ namespace PartSphere.Services
         private readonly IRepository<VehiclePart> _partRepo;
         private readonly IEmailService _emailService;
         private readonly AppDbContext _context;
+        private readonly IAdminLowStockNotifier _adminLowStockNotifier;
         private readonly ILogger<SalesService> _logger;
 
         public SalesService(
@@ -32,6 +33,7 @@ namespace PartSphere.Services
             IRepository<VehiclePart> partRepo,
             IEmailService emailService,
             AppDbContext context,
+            IAdminLowStockNotifier adminLowStockNotifier,
             ILogger<SalesService> logger)
         {
             _salesRepo = salesRepo;
@@ -39,6 +41,7 @@ namespace PartSphere.Services
             _partRepo = partRepo;
             _emailService = emailService;
             _context = context;
+            _adminLowStockNotifier = adminLowStockNotifier;
             _logger = logger;
         }
 
@@ -107,6 +110,7 @@ namespace PartSphere.Services
                     if (part.StockQuantity < itemDto.Quantity)
                         throw new InvalidOperationException($"Insufficient stock for {part.Name}. Available: {part.StockQuantity}");
 
+                    var stockBefore = part.StockQuantity;
                     part.StockQuantity -= itemDto.Quantity;
 
                     if (part.StockQuantity < 10)
@@ -119,6 +123,12 @@ namespace PartSphere.Services
                         });
                         _logger.LogWarning("Low stock alert triggered for Part {PartId}", part.Id);
                     }
+
+                    await _adminLowStockNotifier.NotifyIfCrossedLowThresholdAsync(
+                        part.Name,
+                        part.Brand,
+                        part.StockQuantity,
+                        stockBefore);
 
                     var itemPrice = part.Price * itemDto.Quantity;
                     totalAmount += itemPrice;

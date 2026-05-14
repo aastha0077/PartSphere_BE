@@ -21,17 +21,20 @@ namespace PartSphere.Services
         private readonly IRepository<Customer> _customerRepo;
         private readonly IEmailService _emailService;
         private readonly ILogger<CreditService> _logger;
+        private readonly IConfiguration _configuration;
 
         public CreditService(
             IRepository<CreditPayment> creditRepo,
             IRepository<Customer> customerRepo,
             IEmailService emailService,
-            ILogger<CreditService> logger)
+            ILogger<CreditService> logger,
+            IConfiguration configuration)
         {
             _creditRepo = creditRepo;
             _customerRepo = customerRepo;
             _emailService = emailService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<CreditPaymentDto>> GetAllAsync()
@@ -91,28 +94,48 @@ namespace PartSphere.Services
 
         public async Task SendOverdueRemindersAsync()
         {
+            var minDaysPastDue = int.TryParse(_configuration["Alerts:CreditReminderMinDaysPastDue"], out var mpd) ? mpd : 30;
+            var cooldownDays = int.TryParse(_configuration["Alerts:CreditReminderCooldownDays"], out var cd) ? cd : 14;
+            var now = DateTime.UtcNow;
+            var emailEligibleBefore = now.AddDays(-minDaysPastDue);
+            var cooldownCutoff = now.AddDays(-cooldownDays);
+
             var overdue = await _creditRepo.Query()
                 .Include(c => c.Customer)
                     .ThenInclude(c => c.User)
-                .Where(c => c.Status == CreditStatus.Pending && c.DueDate < DateTime.UtcNow)
+                .Where(c => c.Status != CreditStatus.Paid && c.DueDate < now)
                 .ToListAsync();
 
             foreach (var credit in overdue)
             {
-                credit.Status = CreditStatus.Overdue;
-                await _creditRepo.UpdateAsync(credit);
+                if (credit.Status == CreditStatus.Pending)
+                {
+                    credit.Status = CreditStatus.Overdue;
+                    await _creditRepo.UpdateAsync(credit);
+                }
 
-                if (credit.Customer?.User?.Email != null)
+                if (credit.DueDate > emailEligibleBefore)
+                    continue;
+
+                if (credit.LastCreditReminderSentAt.HasValue && credit.LastCreditReminderSentAt.Value >= cooldownCutoff)
+                    continue;
+
+                var email = credit.Customer?.User?.Email ?? credit.Customer?.Email;
+                if (!string.IsNullOrWhiteSpace(email))
                 {
                     await _emailService.SendCreditReminderAsync(
-                        credit.Customer.User.Email,
-                        credit.Customer.Name,
+                        email,
+                        credit.Customer!.Name,
                         credit.DueAmount,
                         credit.DueDate);
+
+                    credit.LastCreditReminderSentAt = now;
+                    await _creditRepo.UpdateAsync(credit);
                 }
             }
 
-            _logger.LogInformation("Processed {Count} overdue credit reminders", overdue.Count);
+            _logger.LogInformation("Processed overdue credits: {Count} past due; emails only when due before {Threshold} (UTC) with {Cooldown}d cooldown.",
+                overdue.Count, emailEligibleBefore, cooldownDays);
         }
 
         private async Task<CreditPaymentDto> GetByIdAsync(int id)

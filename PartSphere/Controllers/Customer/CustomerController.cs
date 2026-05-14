@@ -17,6 +17,8 @@ namespace PartSphere.Controllers
         private readonly INotificationService _notificationService;
         private readonly IPartService _partService;
         private readonly IPartRequestService _partRequestService;
+        private readonly IAIService _aiService;
+        private readonly IVehicleService _vehicleService;
 
         public CustomerController(
             ICustomerService customerService,
@@ -24,7 +26,9 @@ namespace PartSphere.Controllers
             IReviewService reviewService,
             INotificationService notificationService,
             IPartService partService,
-            IPartRequestService partRequestService)
+            IPartRequestService partRequestService,
+            IAIService aiService,
+            IVehicleService vehicleService)
         {
             _customerService = customerService;
             _appointmentService = appointmentService;
@@ -32,6 +36,8 @@ namespace PartSphere.Controllers
             _notificationService = notificationService;
             _partService = partService;
             _partRequestService = partRequestService;
+            _aiService = aiService;
+            _vehicleService = vehicleService;
         }
 
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -152,6 +158,21 @@ namespace PartSphere.Controllers
             dto.CustomerId = customer.Id;
             var request = await _partRequestService.CreateAsync(dto);
             return Ok(request);
+        }
+
+        [HttpGet("vehicles/{vehicleId:int}/predictive-maintenance")]
+        public async Task<IActionResult> GetPredictiveMaintenanceForVehicle(int vehicleId)
+        {
+            var userId = GetUserId();
+            var customer = await _customerService.GetByUserIdAsync(userId);
+            if (customer == null) return NotFound("Customer profile not found.");
+
+            var vehicle = await _vehicleService.GetByIdAsync(vehicleId);
+            if (vehicle.CustomerId != customer.Id)
+                return Forbid();
+
+            var suggestions = await _aiService.GetPredictiveMaintenanceAsync(vehicleId);
+            return Ok(suggestions);
         }
     }
 }
