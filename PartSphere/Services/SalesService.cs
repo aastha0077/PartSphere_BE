@@ -71,6 +71,7 @@ namespace PartSphere.Services
                 .Include(s => s.Items)
                     .ThenInclude(i => i.VehiclePart)
                 .OrderByDescending(s => s.Date)
+                .ThenByDescending(s => s.Id)
                 .ToListAsync();
 
             return invoices.Select(MapToDto);

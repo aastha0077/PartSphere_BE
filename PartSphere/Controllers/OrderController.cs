@@ -31,7 +31,9 @@ namespace PartSphere.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var role = User.FindFirstValue(ClaimTypes.Role);
 
-            var orders = await _salesService.GetAllAsync();
+            var orders = (await _salesService.GetAllAsync())
+                .OrderByDescending(o => o.Date)
+                .ThenByDescending(o => o.Id);
 
             if (role == "Customer")
             {
@@ -40,7 +42,7 @@ namespace PartSphere.Controllers
                 orders = orders.Where(o => o.CustomerId == userId); // Assuming CustomerId matches UserId for simplicity (or we'd need to fetch Customer via UserId)
             }
 
-            return Ok(orders);
+            return Ok(orders.ToList());
         }
 
         [HttpGet("{id}")]

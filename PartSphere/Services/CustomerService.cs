@@ -152,27 +152,31 @@ namespace PartSphere.Services
                     LastServiceDate = v.LastServiceDate,
                     CustomerId = v.CustomerId
                 }).ToList(),
-                Purchases = customer.SalesInvoices.Select(s => new SalesInvoiceDto
-                {
-                    Id = s.Id,
-                    CustomerId = s.CustomerId,
-                    CustomerName = customer.Name,
-                    StaffId = s.StaffId,
-                    StaffName = s.Staff?.Name ?? "",
-                    TotalAmount = s.TotalAmount,
-                    DiscountAmount = s.DiscountAmount,
-                    PaymentMethod = s.PaymentMethod,
-                    Date = s.Date,
-                    Items = s.Items.Select(i => new SalesItemDto
+                Purchases = customer.SalesInvoices
+                    .OrderByDescending(s => s.Date)
+                    .ThenByDescending(s => s.Id)
+                    .Select(s => new SalesInvoiceDto
                     {
-                        Id = i.Id,
-                        VehiclePartId = i.VehiclePartId,
-                        PartName = i.VehiclePart?.Name ?? "",
-                        Quantity = i.Quantity,
-                        UnitPrice = i.UnitPrice,
-                        TotalPrice = i.TotalPrice
-                    }).ToList()
-                }).ToList(),
+                        Id = s.Id,
+                        CustomerId = s.CustomerId,
+                        CustomerName = customer.Name,
+                        StaffId = s.StaffId,
+                        StaffName = s.Staff?.Name ?? "",
+                        TotalAmount = s.TotalAmount,
+                        DiscountAmount = s.DiscountAmount,
+                        PaymentMethod = s.PaymentMethod,
+                        PaymentStatus = s.PaymentStatus,
+                        Date = s.Date,
+                        Items = s.Items.Select(i => new SalesItemDto
+                        {
+                            Id = i.Id,
+                            VehiclePartId = i.VehiclePartId,
+                            PartName = i.VehiclePart?.Name ?? "",
+                            Quantity = i.Quantity,
+                            UnitPrice = i.UnitPrice,
+                            TotalPrice = i.TotalPrice
+                        }).ToList()
+                    }).ToList(),
                 Appointments = customer.Appointments.Select(a => new AppointmentDto
                 {
                     Id = a.Id,
