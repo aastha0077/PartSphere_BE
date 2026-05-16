@@ -7,7 +7,6 @@ namespace PartSphere.Data
     {
         public static async Task SeedAsync(AppDbContext context)
         {
-            // 1. Seed Admin
             if (!await context.Users.AnyAsync(u => u.Role == UserRole.Admin))
             {
                 var admin = new User
@@ -22,7 +21,6 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            // 2. Seed Vendors (Nepali Names)
             if (!await context.Vendors.AnyAsync())
             {
                 var vendors = new List<Vendor>
@@ -36,7 +34,6 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            // 3. Seed Customers
             if (!await context.Customers.AnyAsync())
             {
                 var customers = new List<Customer>
@@ -49,7 +46,6 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            // 4. Seed Parts
             if (!await context.VehicleParts.AnyAsync())
             {
                 var vendors = await context.Vendors.ToListAsync();
@@ -65,7 +61,6 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            // 5. Seed Vehicles for Customers
             if (!await context.Vehicles.AnyAsync())
             {
                 var customers = await context.Customers.ToListAsync();
@@ -79,7 +74,6 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            // 6. Seed Recent Sales
             if (!await context.SalesInvoices.AnyAsync())
             {
                 var customers = await context.Customers.ToListAsync();
@@ -88,12 +82,12 @@ namespace PartSphere.Data
 
                 var sales = new List<SalesInvoice>
                 {
-                    new SalesInvoice 
-                    { 
-                        CustomerId = customers[0].Id, 
+                    new SalesInvoice
+                    {
+                        CustomerId = customers[0].Id,
                         StaffId = admin.Id,
-                        Date = DateTime.UtcNow.AddDays(-2), 
-                        TotalAmount = 25000.00m, 
+                        Date = DateTime.UtcNow.AddDays(-2),
+                        TotalAmount = 25000.00m,
                         DiscountAmount = 500m,
                         PaymentMethod = "Cash",
                         PaymentStatus = "PAID",
@@ -104,26 +98,25 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            // 7. Seed Appointments
             if (!await context.Appointments.AnyAsync())
             {
                 var customers = await context.Customers.ToListAsync();
                 var vehicles = await context.Vehicles.ToListAsync();
-                
+
                 var appointments = new List<Appointment>
                 {
-                    new Appointment 
-                    { 
-                        CustomerId = customers[0].Id, 
+                    new Appointment
+                    {
+                        CustomerId = customers[0].Id,
                         VehicleId = vehicles[0].Id,
                         ServiceType = "Oil & Filter Change",
                         Date = DateTime.UtcNow.AddDays(1),
                         Status = AppointmentStatus.Confirmed,
                         Description = "Regular maintenance checkup."
                     },
-                    new Appointment 
-                    { 
-                        CustomerId = customers[1].Id, 
+                    new Appointment
+                    {
+                        CustomerId = customers[1].Id,
                         VehicleId = vehicles[2].Id,
                         ServiceType = "Brake Service",
                         Date = DateTime.UtcNow.AddDays(3),

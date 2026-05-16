@@ -6,7 +6,7 @@ namespace PartSphere.Models
     public class Invoice
     {
         public int Id { get; set; }
-        
+
         public int SalesInvoiceId { get; set; }
         public SalesInvoice SalesInvoice { get; set; } = null!;
 

@@ -6,9 +6,6 @@ using PartSphere.Models;
 
 namespace PartSphere.Helpers
 {
-    /// <summary>
-    /// JWT token generation and validation helper.
-    /// </summary>
     public class JwtHelper
     {
         private readonly IConfiguration _config;
@@ -18,9 +15,6 @@ namespace PartSphere.Helpers
             _config = config;
         }
 
-        /// <summary>
-        /// Generate a JWT token for an authenticated user.
-        /// </summary>
         public string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(
@@ -35,7 +29,6 @@ namespace PartSphere.Helpers
                 new Claim(ClaimTypes.Role, user.Role.ToString())
             };
 
-            // Include CustomerId if the user has a linked customer
             if (user.Customer != null)
             {
                 claims.Add(new Claim("CustomerId", user.Customer.Id.ToString()));

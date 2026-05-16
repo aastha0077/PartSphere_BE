@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PartSphere.DTOs
 {
-    // ===== SALES =====
     public class SalesInvoiceDto
     {
         public int Id { get; set; }
@@ -43,11 +42,13 @@ namespace PartSphere.DTOs
         [Required]
         public int CustomerId { get; set; }
 
+        public int? VehicleId { get; set; }
+
         [Required, MaxLength(50)]
         public string PaymentMethod { get; set; } = "Cash";
 
         [Required, MaxLength(50)]
-        public string PaymentStatus { get; set; } = "PAID"; // PAID, CREDIT
+        public string PaymentStatus { get; set; } = "PAID";
 
         [Required]
         public List<CreateSalesItemDto> Items { get; set; } = new();
@@ -62,7 +63,6 @@ namespace PartSphere.DTOs
         public int Quantity { get; set; }
     }
 
-    // ===== PURCHASE =====
     public class PurchaseInvoiceDto
     {
         public int Id { get; set; }

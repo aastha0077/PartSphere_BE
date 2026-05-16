@@ -25,10 +25,9 @@ namespace PartSphere.BackgroundServices
                 {
                     using var scope = _serviceProvider.CreateScope();
                     var creditService = scope.ServiceProvider.GetRequiredService<ICreditService>();
-                    
-                    // Automatically send overdue reminders (checks due dates)
+
                     await creditService.SendOverdueRemindersAsync();
-                    
+
                     _logger.LogInformation("Successfully processed automatic email reminders for unpaid credits.");
                 }
                 catch (Exception ex)
@@ -36,7 +35,6 @@ namespace PartSphere.BackgroundServices
                     _logger.LogError(ex, "Error occurred executing daily cron jobs.");
                 }
 
-                // Wait 24 hours before running again
                 await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
             }
 

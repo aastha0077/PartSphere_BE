@@ -28,7 +28,6 @@ namespace PartSphere.Models
 
         public bool IsActive { get; set; } = true;
 
-        // Navigation
         public Customer? Customer { get; set; }
     }
 }

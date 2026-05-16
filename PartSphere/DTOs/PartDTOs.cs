@@ -52,7 +52,7 @@ namespace PartSphere.DTOs
     {
         [Range(0, 1000000)]
         public int StockQuantity { get; set; }
-        
+
         [Required]
         public byte[] RowVersion { get; set; } = null!;
     }

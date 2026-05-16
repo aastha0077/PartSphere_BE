@@ -28,6 +28,24 @@ namespace PartSphere.DTOs
 
         [Required, EmailAddress, MaxLength(150)]
         public string Email { get; set; } = string.Empty;
+
+        /// <summary>Optional vehicle to register with the customer in one step.</summary>
+        public CreateCustomerVehicleDto? Vehicle { get; set; }
+    }
+
+    public class CreateCustomerVehicleDto
+    {
+        [Required, MaxLength(20)]
+        public string VehicleNumber { get; set; } = string.Empty;
+
+        [Required, MaxLength(50)]
+        public string Brand { get; set; } = string.Empty;
+
+        [Required, MaxLength(100)]
+        public string Model { get; set; } = string.Empty;
+
+        [Range(0, int.MaxValue)]
+        public int Mileage { get; set; }
     }
 
     public class UpdateCustomerDto

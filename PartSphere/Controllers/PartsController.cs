@@ -18,9 +18,9 @@ namespace PartSphere.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAll(
-            [FromQuery] string? search, 
-            [FromQuery] string? category, 
-            [FromQuery] int page = 1, 
+            [FromQuery] string? search,
+            [FromQuery] string? category,
+            [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
             var (items, total) = await _partService.GetAllAsync(search, category, page, pageSize);

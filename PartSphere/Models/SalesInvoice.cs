@@ -10,7 +10,6 @@ namespace PartSphere.Models
         public int CustomerId { get; set; }
         public Customer Customer { get; set; } = null!;
 
-        // Staff who processed the sale
         public int StaffId { get; set; }
         public User Staff { get; set; } = null!;
 
@@ -28,12 +27,11 @@ namespace PartSphere.Models
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
         [MaxLength(50)]
-        public string PaymentMethod { get; set; } = "Cash"; // Cash, Card
+        public string PaymentMethod { get; set; } = "Cash";
 
         [MaxLength(50)]
-        public string PaymentStatus { get; set; } = "PAID"; // PAID, CREDIT
+        public string PaymentStatus { get; set; } = "PAID";
 
-        // Navigation
         public ICollection<SalesItem> Items { get; set; } = new List<SalesItem>();
         public Invoice? Invoice { get; set; }
     }

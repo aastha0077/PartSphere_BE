@@ -13,14 +13,11 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
-// ===== DATABASE =====
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 
-// ===== REPOSITORIES (Generic) =====
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// ===== SERVICES =====
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPartService, PartService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
@@ -39,13 +36,10 @@ builder.Services.AddScoped<ICreditService, CreditService>();
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
-// QuestPDF License initialization
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
-// ===== HELPERS =====
 builder.Services.AddSingleton<JwtHelper>();
 
-// ===== JWT AUTHENTICATION =====
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -71,7 +65,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AllRoles", policy => policy.RequireRole("Admin", "Staff", "Customer"));
 });
 
-// ===== CORS (Allow React Frontend) =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -116,7 +109,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ===== MIDDLEWARE PIPELINE =====
 app.UseCors("AllowFrontend");
 
 if (app.Environment.IsDevelopment())
@@ -132,7 +124,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// ===== SEED DATA =====
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();

@@ -17,7 +17,6 @@ namespace PartSphere.Models
         public int CustomerId { get; set; }
         public Customer Customer { get; set; } = null!;
 
-        // Reference to the sales invoice
         public int? SalesInvoiceId { get; set; }
         public SalesInvoice? SalesInvoice { get; set; }
 
@@ -32,7 +31,6 @@ namespace PartSphere.Models
 
         public DateTime? PaidDate { get; set; }
 
-        /// <summary>Last time an overdue credit reminder email was sent (cooldown applies).</summary>
         public DateTime? LastCreditReminderSentAt { get; set; }
     }
 }

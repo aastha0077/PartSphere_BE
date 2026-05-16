@@ -7,9 +7,6 @@ using PartSphere.Repositories;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Handles user registration, login, and JWT token generation.
-    /// </summary>
     public interface IAuthService
     {
         Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
@@ -46,7 +43,6 @@ namespace PartSphere.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
-            // Validate inputs
             if (string.IsNullOrWhiteSpace(dto.Name))
                 throw new ArgumentException("Name is required.");
             if (string.IsNullOrWhiteSpace(dto.Email))
@@ -54,14 +50,11 @@ namespace PartSphere.Services
             if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
                 throw new ArgumentException("Password must be at least 6 characters.");
 
-            // Check if email already exists
             var existing = await _userRepo.Query()
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (existing != null)
                 throw new ArgumentException("Email is already registered.");
 
-            // SECURITY: Public registration ALWAYS creates Customer role only.
-            // Admin and Staff accounts can only be created by an Admin.
             var user = new User
             {
                 Name = dto.Name.Trim(),
@@ -72,7 +65,6 @@ namespace PartSphere.Services
 
             await _userRepo.AddAsync(user);
 
-            // Create linked customer profile
             var customer = new Customer
             {
                 Name = dto.Name.Trim(),
@@ -84,7 +76,6 @@ namespace PartSphere.Services
 
             await _customerRepo.AddAsync(customer);
 
-            // Reload user with customer
             user.Customer = customer;
 
             var token = _jwtHelper.GenerateToken(user);
@@ -177,7 +168,7 @@ namespace PartSphere.Services
 
             user.Name = dto.Name;
             user.Email = dto.Email;
-            
+
             if (Enum.TryParse<UserRole>(dto.Role, true, out var newRole))
                 user.Role = newRole;
 
@@ -217,7 +208,7 @@ namespace PartSphere.Services
 
             return new AuthResponseDto
             {
-                Token = "", // Token not needed for GetMe
+                Token = "",
                 Role = user.Role.ToString(),
                 Name = user.Name,
                 Email = user.Email,

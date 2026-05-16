@@ -39,7 +39,6 @@ namespace PartSphere.DTOs
         public int? CustomerId { get; set; }
     }
 
-    // ===== STAFF CREATION (Admin) =====
     public class CreateStaffDto
     {
         [Required, MaxLength(100)]

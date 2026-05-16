@@ -32,7 +32,7 @@ namespace PartSphere.Services
                 .Include(r => r.Customer)
                 .FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new KeyNotFoundException("Part request not found.");
-            
+
             return MapToDto(request);
         }
 

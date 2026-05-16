@@ -16,14 +16,13 @@ namespace PartSphere.Services
         public async Task<List<MaintenanceSuggestion>> GetPredictiveMaintenanceAsync(int vehicleId)
         {
             var suggestions = new List<MaintenanceSuggestion>();
-            
+
             var vehicle = await _context.Vehicles
                 .Include(v => v.Customer)
                 .FirstOrDefaultAsync(v => v.Id == vehicleId);
 
             if (vehicle == null) return suggestions;
 
-            // Get all historical parts installed on this vehicle
             var salesHistory = await _context.SalesInvoices
                 .Where(s => s.VehicleId == vehicleId && s.PaymentStatus == "PAID")
                 .Include(s => s.Items)
@@ -33,15 +32,11 @@ namespace PartSphere.Services
                 .OrderByDescending(s => s.Date)
                 .ToListAsync();
 
-            // Simple AI Logic:
-            // 1. If a critical part (e.g., Brake Pads) hasn't been replaced in > LifespanKm
-            // 2. If the vehicle mileage is high and certain parts are original
-            
+
             var criticalParts = new[] { "Brake Pads", "Oil Filter", "Timing Belt", "Spark Plugs", "Air Filter" };
 
             foreach (var partName in criticalParts)
             {
-                // Find last time this part was sold/installed for this vehicle
                 var lastReplacement = salesHistory
                     .SelectMany(s => s.Items)
                     .FirstOrDefault(i => i.VehiclePart.Name.Contains(partName, StringComparison.OrdinalIgnoreCase));
@@ -76,8 +71,6 @@ namespace PartSphere.Services
                 }
                 else
                 {
-                    // Part never replaced in our records
-                    // If vehicle has high mileage, suggest it
                     if (vehicle.Mileage > 20000)
                     {
                         suggestions.Add(new MaintenanceSuggestion
@@ -97,10 +90,8 @@ namespace PartSphere.Services
 
         public async Task<List<StockPrediction>> GetInventoryForecastAsync()
         {
-            // Simple AI Logic: 
-            // Calculate sales velocity of last 30 days and predict next 30
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-            
+
             var recentSales = await _context.SalesItems
                 .Include(i => i.SalesInvoice)
                 .Include(i => i.VehiclePart)
@@ -113,7 +104,7 @@ namespace PartSphere.Services
                 {
                     PartId = g.Key.VehiclePartId,
                     PartName = g.Key.Name,
-                    PredictedDemandNext30Days = (int)Math.Ceiling(g.Sum(x => x.Quantity) * 1.1), // Expect 10% growth
+                    PredictedDemandNext30Days = (int)Math.Ceiling(g.Sum(x => x.Quantity) * 1.1),
                     RestockRecommended = g.Key.StockQuantity < (g.Sum(x => x.Quantity) * 1.1)
                 })
                 .OrderByDescending(p => p.PredictedDemandNext30Days)

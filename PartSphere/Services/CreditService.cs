@@ -13,6 +13,7 @@ namespace PartSphere.Services
         Task<CreditPaymentDto> CreateAsync(CreateCreditPaymentDto dto);
         Task<CreditPaymentDto> MarkAsPaidAsync(int id);
         Task SendOverdueRemindersAsync();
+        Task SendReminderForCreditAsync(int id);
     }
 
     public class CreditService : ICreditService
@@ -136,6 +137,35 @@ namespace PartSphere.Services
 
             _logger.LogInformation("Processed overdue credits: {Count} past due; emails only when due before {Threshold} (UTC) with {Cooldown}d cooldown.",
                 overdue.Count, emailEligibleBefore, cooldownDays);
+        }
+
+        public async Task SendReminderForCreditAsync(int id)
+        {
+            var credit = await _creditRepo.Query()
+                .Include(c => c.Customer)
+                    .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id)
+                ?? throw new KeyNotFoundException("Credit payment not found.");
+
+            if (credit.Status == CreditStatus.Paid)
+                throw new InvalidOperationException("This credit has already been paid.");
+
+            var email = credit.Customer?.User?.Email ?? credit.Customer?.Email;
+            if (string.IsNullOrWhiteSpace(email))
+                throw new InvalidOperationException("Customer does not have an email address on file.");
+
+            await _emailService.SendCreditReminderAsync(
+                email,
+                credit.Customer!.Name,
+                credit.DueAmount,
+                credit.DueDate);
+
+            credit.LastCreditReminderSentAt = DateTime.UtcNow;
+            if (credit.Status == CreditStatus.Pending && credit.DueDate < DateTime.UtcNow)
+                credit.Status = CreditStatus.Overdue;
+
+            await _creditRepo.UpdateAsync(credit);
+            _logger.LogInformation("Credit reminder sent for credit {CreditId} to customer {CustomerId}", id, credit.CustomerId);
         }
 
         private async Task<CreditPaymentDto> GetByIdAsync(int id)

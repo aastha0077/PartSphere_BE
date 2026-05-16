@@ -4,12 +4,8 @@ using PartSphere.Models;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Emails all active admin users when inventory crosses into low stock (&lt; 10).
-    /// </summary>
     public interface IAdminLowStockNotifier
     {
-        /// <param name="previousStockQuantity">Stock before the change; null means new part / unknown (notify if low).</param>
         Task NotifyIfCrossedLowThresholdAsync(string partName, string brand, int newStockQuantity, int? previousStockQuantity);
     }
 

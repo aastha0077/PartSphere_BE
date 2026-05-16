@@ -96,6 +96,7 @@ namespace PartSphere.Services
                 {
                     CustomerId = dto.CustomerId,
                     StaffId = staffId,
+                    VehicleId = dto.VehicleId,
                     PaymentMethod = dto.PaymentMethod,
                     PaymentStatus = dto.PaymentStatus,
                     Date = DateTime.UtcNow
@@ -162,7 +163,6 @@ namespace PartSphere.Services
                 };
                 await _context.Invoices.AddAsync(generatedInvoice);
 
-                // Update Loyalty Points: 1 point for every 100 spent
                 int earnedPoints = (int)(invoice.TotalAmount / 100);
                 customer.LoyaltyPoints += earnedPoints;
                 _logger.LogInformation("Customer {CustomerId} earned {Points} loyalty points", customer.Id, earnedPoints);
@@ -188,10 +188,11 @@ namespace PartSphere.Services
 
                 try
                 {
-                    if (customer.User != null && !string.IsNullOrEmpty(customer.User.Email))
+                    var email = customer.User?.Email ?? customer.Email;
+                    if (!string.IsNullOrWhiteSpace(email))
                     {
                         await _emailService.SendInvoiceEmailAsync(
-                            customer.User.Email,
+                            email,
                             customer.Name,
                             invoice.Id,
                             invoice.TotalAmount);

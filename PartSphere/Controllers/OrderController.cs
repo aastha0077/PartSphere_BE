@@ -11,7 +11,7 @@ namespace PartSphere.Controllers
 {
     [ApiController]
     [Route("api/orders")]
-    [Authorize] // All roles can access, but logic inside filters
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly ISalesService _salesService;
@@ -86,15 +86,14 @@ namespace PartSphere.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var customer = await _customerService.GetByUserIdAsync(userId);
             if (customer == null) return NotFound("Customer profile not found.");
-            
+
             dto.CustomerId = customer.Id;
             dto.PaymentStatus = "Pending";
             if (string.IsNullOrEmpty(dto.PaymentMethod))
             {
                 dto.PaymentMethod = "Online";
             }
-            
-            // Assign to first available admin or staff
+
             var admin = await _context.Users.FirstOrDefaultAsync(u => u.Role == UserRole.Admin || u.Role == UserRole.Staff);
             int processingStaffId = admin?.Id ?? 1;
 

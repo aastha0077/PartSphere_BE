@@ -3,9 +3,6 @@ using MimeKit;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Email service using SMTP (MailKit) for sending invoices and reminders.
-    /// </summary>
     public interface IEmailService
     {
         Task SendEmailAsync(string to, string subject, string htmlBody);
@@ -59,7 +56,6 @@ namespace PartSphere.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send email to {To}", to);
-                // Don't throw - email failure shouldn't crash the application
             }
         }
 

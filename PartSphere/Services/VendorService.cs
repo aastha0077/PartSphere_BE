@@ -5,9 +5,6 @@ using PartSphere.Repositories;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Handles CRUD for vendors (parts suppliers).
-    /// </summary>
     public interface IVendorService
     {
         Task<IEnumerable<VendorDto>> GetAllAsync();

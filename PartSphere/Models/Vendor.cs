@@ -30,7 +30,6 @@ namespace PartSphere.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation
         public ICollection<VehiclePart> Parts { get; set; } = new List<VehiclePart>();
         public ICollection<PurchaseInvoice> PurchaseInvoices { get; set; } = new List<PurchaseInvoice>();
     }
