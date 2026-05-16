@@ -5,9 +5,6 @@ using PartSphere.Repositories;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Handles vehicle CRUD and links vehicles to customers.
-    /// </summary>
     public interface IVehicleService
     {
         Task<IEnumerable<VehicleDto>> GetAllAsync();
@@ -70,7 +67,6 @@ namespace PartSphere.Services
             if (!await _customerRepo.ExistsAsync(dto.CustomerId))
                 throw new KeyNotFoundException("Customer not found.");
 
-            // Check unique vehicle number
             var existing = await _vehicleRepo.Query()
                 .FirstOrDefaultAsync(v => v.VehicleNumber == dto.VehicleNumber);
             if (existing != null)

@@ -2,9 +2,6 @@ using System.Linq.Expressions;
 
 namespace PartSphere.Repositories
 {
-    /// <summary>
-    /// Generic repository interface for common CRUD operations.
-    /// </summary>
     public interface IRepository<T> where T : class
     {
         Task<T?> GetByIdAsync(int id);

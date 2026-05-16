@@ -19,9 +19,7 @@ namespace PartSphere.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMyNotifications()
         {
-            // In a real app, you'd get the UserId from claims
-            // var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var notifications = await _notificationService.GetAllAsync(); // Mocking all for now
+            var notifications = await _notificationService.GetAllAsync();
             return Ok(notifications);
         }
 

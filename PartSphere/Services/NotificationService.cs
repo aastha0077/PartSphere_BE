@@ -5,9 +5,6 @@ using PartSphere.Repositories;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Manages system notifications (low stock, credit reminders, maintenance suggestions).
-    /// </summary>
     public interface INotificationService
     {
         Task<IEnumerable<NotificationDto>> GetAllAsync();
@@ -96,7 +93,7 @@ namespace PartSphere.Services
                 n.IsRead = true;
             }
 
-            await _notificationRepo.UpdateAsync(unread.First()); // triggers SaveChanges
+            await _notificationRepo.UpdateAsync(unread.First());
         }
 
         public async Task DeleteAsync(int id)

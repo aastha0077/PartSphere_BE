@@ -21,7 +21,7 @@ namespace PartSphere.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [MaxLength(20)]
-        public string Status { get; set; } = "Pending"; // Pending, InProcess, Available, Cancelled
+        public string Status { get; set; } = "Pending";
 
         public string? StaffNotes { get; set; }
     }

@@ -4,10 +4,6 @@ using PartSphere.Data;
 
 namespace PartSphere.Repositories
 {
-    /// <summary>
-    /// Generic repository implementation using EF Core.
-    /// Handles ALL database access; no business logic here.
-    /// </summary>
     public class Repository<T> : IRepository<T> where T : class
     {
         protected readonly AppDbContext _context;

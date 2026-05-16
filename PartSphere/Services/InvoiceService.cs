@@ -14,7 +14,6 @@ namespace PartSphere.Services
     {
         public byte[] GenerateSalesInvoicePdf(SalesInvoice invoice)
         {
-            // QuestPDF.Settings.License = LicenseType.Community; // Required for newer versions
 
             var document = Document.Create(container =>
             {

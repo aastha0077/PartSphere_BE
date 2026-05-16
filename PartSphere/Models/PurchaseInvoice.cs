@@ -19,12 +19,11 @@ namespace PartSphere.Models
         public string Status { get; set; } = "Completed";
 
         [MaxLength(50)]
-        public string PaymentMethod { get; set; } = "Cash"; // Cash, Credit
+        public string PaymentMethod { get; set; } = "Cash";
 
         [MaxLength(500)]
         public string Notes { get; set; } = string.Empty;
 
-        // Navigation
         public ICollection<PurchaseItem> Items { get; set; } = new List<PurchaseItem>();
     }
 }

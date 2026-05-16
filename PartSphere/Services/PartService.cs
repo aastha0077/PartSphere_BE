@@ -45,7 +45,7 @@ namespace PartSphere.Services
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.Name.ToLower().Contains(search.ToLower()) || 
+                query = query.Where(p => p.Name.ToLower().Contains(search.ToLower()) ||
                                          p.Brand.ToLower().Contains(search.ToLower()));
             }
 
@@ -104,7 +104,6 @@ namespace PartSphere.Services
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted)
                 ?? throw new KeyNotFoundException("Part not found.");
 
-            // Concurrency check
             if (!part.RowVersion.SequenceEqual(dto.RowVersion))
                 throw new DbUpdateConcurrencyException("The record has been modified by another user. Please refresh.");
 
@@ -160,7 +159,6 @@ namespace PartSphere.Services
             var part = await _partRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Part not found.");
 
-            // Soft delete
             part.IsDeleted = true;
             part.UpdatedAt = DateTime.UtcNow;
             await _partRepo.UpdateAsync(part);

@@ -7,7 +7,7 @@ namespace PartSphere.Controllers.Admin
 {
     [ApiController]
     [Route("api/admin/credits")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Staff")]
     public class AdminCreditController : ControllerBase
     {
         private readonly ICreditService _creditService;
@@ -50,6 +50,13 @@ namespace PartSphere.Controllers.Admin
         {
             await _creditService.SendOverdueRemindersAsync();
             return Ok(new { message = "Overdue reminders sent." });
+        }
+
+        [HttpPost("{id}/remind")]
+        public async Task<IActionResult> SendReminder(int id)
+        {
+            await _creditService.SendReminderForCreditAsync(id);
+            return Ok(new { message = "Reminder sent to customer." });
         }
     }
 }

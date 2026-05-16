@@ -5,9 +5,6 @@ using PartSphere.Repositories;
 
 namespace PartSphere.Services
 {
-    /// <summary>
-    /// Handles customer management, search, and history.
-    /// </summary>
     public interface ICustomerService
     {
         Task<IEnumerable<CustomerDto>> GetAllAsync();
@@ -23,11 +20,16 @@ namespace PartSphere.Services
     public class CustomerService : ICustomerService
     {
         private readonly IRepository<Customer> _customerRepo;
+        private readonly IRepository<Vehicle> _vehicleRepo;
         private readonly ILogger<CustomerService> _logger;
 
-        public CustomerService(IRepository<Customer> customerRepo, ILogger<CustomerService> logger)
+        public CustomerService(
+            IRepository<Customer> customerRepo,
+            IRepository<Vehicle> vehicleRepo,
+            ILogger<CustomerService> logger)
         {
             _customerRepo = customerRepo;
+            _vehicleRepo = vehicleRepo;
             _logger = logger;
         }
 
@@ -64,9 +66,26 @@ namespace PartSphere.Services
             };
 
             await _customerRepo.AddAsync(customer);
+
+            if (dto.Vehicle != null &&
+                !string.IsNullOrWhiteSpace(dto.Vehicle.VehicleNumber))
+            {
+                var vehicle = new Vehicle
+                {
+                    CustomerId = customer.Id,
+                    VehicleNumber = dto.Vehicle.VehicleNumber.Trim(),
+                    Brand = dto.Vehicle.Brand.Trim(),
+                    Model = dto.Vehicle.Model.Trim(),
+                    Mileage = dto.Vehicle.Mileage
+                };
+                await _vehicleRepo.AddAsync(vehicle);
+                _logger.LogInformation("Vehicle {Plate} registered for customer {CustomerId}",
+                    vehicle.VehicleNumber, customer.Id);
+            }
+
             _logger.LogInformation("Customer created: {Name}", dto.Name);
 
-            return MapToDto(customer);
+            return await GetByIdAsync(customer.Id);
         }
 
         public async Task<CustomerDto> UpdateAsync(int id, UpdateCustomerDto dto)
@@ -92,9 +111,6 @@ namespace PartSphere.Services
             await _customerRepo.DeleteAsync(customer);
         }
 
-        /// <summary>
-        /// Search customers by name, phone, ID, or vehicle number.
-        /// </summary>
         public async Task<IEnumerable<CustomerSearchResultDto>> SearchAsync(string query)
         {
             var q = query.ToLower().Trim();
@@ -121,9 +137,6 @@ namespace PartSphere.Services
             });
         }
 
-        /// <summary>
-        /// Get full customer history: purchases, vehicles, appointments.
-        /// </summary>
         public async Task<CustomerHistoryDto> GetHistoryAsync(int customerId)
         {
             var customer = await _customerRepo.Query()

@@ -20,11 +20,9 @@ namespace PartSphere.Models
 
         public int LoyaltyPoints { get; set; } = 0;
 
-        // Foreign key to User (for self-registered customers)
         public int? UserId { get; set; }
         public User? User { get; set; }
 
-        // Navigation
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
         public ICollection<SalesInvoice> SalesInvoices { get; set; } = new List<SalesInvoice>();
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();

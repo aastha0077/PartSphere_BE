@@ -24,9 +24,8 @@ namespace PartSphere.Models
         [MaxLength(100)]
         public string Category { get; set; } = "General";
 
-        public int LifespanKm { get; set; } = 15000; // Default replacement after 15k km
+        public int LifespanKm { get; set; } = 15000;
 
-        // Concurrency & Audit
         [Timestamp]
         public byte[] RowVersion { get; set; } = null!;
 
@@ -35,11 +34,9 @@ namespace PartSphere.Models
 
         public bool IsDeleted { get; set; } = false;
 
-        // Foreign key
         public int VendorId { get; set; }
         public Vendor Vendor { get; set; } = null!;
 
-        // Navigation
         public ICollection<SalesItem> SalesItems { get; set; } = new List<SalesItem>();
         public ICollection<PurchaseItem> PurchaseItems { get; set; } = new List<PurchaseItem>();
     }

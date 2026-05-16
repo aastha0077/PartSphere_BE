@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PartSphere.DTOs
 {
-    // ===== PART REQUEST =====
     public class PartRequestDto
     {
         public int Id { get; set; }
@@ -30,7 +29,6 @@ namespace PartSphere.DTOs
         public string Description { get; set; } = string.Empty;
     }
 
-    // ===== APPOINTMENT =====
     public class AppointmentDto
     {
         public int Id { get; set; }
@@ -66,7 +64,6 @@ namespace PartSphere.DTOs
         public string Status { get; set; } = string.Empty;
     }
 
-    // ===== REVIEW =====
     public class ReviewDto
     {
         public int Id { get; set; }
@@ -88,7 +85,6 @@ namespace PartSphere.DTOs
         public string Comment { get; set; } = string.Empty;
     }
 
-    // ===== NOTIFICATION =====
     public class NotificationDto
     {
         public int Id { get; set; }
@@ -98,7 +94,6 @@ namespace PartSphere.DTOs
         public DateTime CreatedAt { get; set; }
     }
 
-    // ===== CREDIT PAYMENT =====
     public class CreditPaymentDto
     {
         public int Id { get; set; }
@@ -125,7 +120,6 @@ namespace PartSphere.DTOs
         public DateTime DueDate { get; set; }
     }
 
-    // ===== DASHBOARD & REPORTS =====
     public class DashboardDto
     {
         public int TotalParts { get; set; }
@@ -197,7 +191,6 @@ namespace PartSphere.DTOs
         public decimal Revenue { get; set; }
     }
 
-    // ===== SALES REPORT =====
     public class SalesReportItemDto
     {
         public int InvoiceId { get; set; }

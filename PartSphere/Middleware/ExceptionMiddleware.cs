@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace PartSphere.Middleware
 {
-    
+
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
@@ -21,7 +21,6 @@ namespace PartSphere.Middleware
             {
                 await _next(context);
 
-                // Handle 403 Forbidden from [Authorize] when role doesn't match
                 if (context.Response.StatusCode == 403 && !context.Response.HasStarted)
                 {
                     await WriteErrorResponse(context, HttpStatusCode.Forbidden,
@@ -82,7 +81,7 @@ namespace PartSphere.Middleware
         }
     }
 
-    
+
     public class ForbiddenAccessException : Exception
     {
         public ForbiddenAccessException(string message = "You do not have permission to access this resource.")

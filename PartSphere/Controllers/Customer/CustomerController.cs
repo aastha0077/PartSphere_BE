@@ -42,7 +42,6 @@ namespace PartSphere.Controllers
 
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        // ===== PROFILE =====
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
@@ -52,7 +51,6 @@ namespace PartSphere.Controllers
             return Ok(customer);
         }
 
-        // ===== PARTS BROWSING =====
         [HttpGet("parts")]
         public async Task<IActionResult> BrowseParts()
         {
@@ -67,7 +65,6 @@ namespace PartSphere.Controllers
             return Ok(parts.Items);
         }
 
-        // ===== APPOINTMENTS =====
         [HttpGet("appointments")]
         public async Task<IActionResult> GetMyAppointments()
         {
@@ -89,7 +86,6 @@ namespace PartSphere.Controllers
             return Ok(appointment);
         }
 
-        // ===== REVIEWS =====
         [HttpGet("reviews")]
         public async Task<IActionResult> GetMyReviews()
         {
@@ -111,7 +107,6 @@ namespace PartSphere.Controllers
             return Ok(review);
         }
 
-        // ===== NOTIFICATIONS =====
         [HttpGet("notifications")]
         public async Task<IActionResult> GetNotifications()
         {
@@ -127,7 +122,6 @@ namespace PartSphere.Controllers
             return Ok(new { message = "Notification marked as read." });
         }
 
-        // ===== PURCHASE HISTORY =====
         [HttpGet("history")]
         public async Task<IActionResult> GetPurchaseHistory()
         {
@@ -138,7 +132,6 @@ namespace PartSphere.Controllers
             return Ok(history);
         }
 
-        // ===== PART REQUESTS =====
         [HttpGet("part-requests")]
         public async Task<IActionResult> GetMyPartRequests()
         {

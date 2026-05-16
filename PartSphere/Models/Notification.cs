@@ -21,7 +21,6 @@ namespace PartSphere.Models
 
         public bool IsRead { get; set; } = false;
 
-        // Optional: target user for the notification
         public int? UserId { get; set; }
         public User? User { get; set; }
 

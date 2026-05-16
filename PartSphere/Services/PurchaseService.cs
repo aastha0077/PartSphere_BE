@@ -110,7 +110,7 @@ namespace PartSphere.Services
                 invoice.TotalAmount = totalAmount;
 
                 await _purchaseRepo.AddAsync(invoice);
-                
+
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Purchase Invoice created: {InvoiceId} for Vendor {VendorId}", invoice.Id, invoice.VendorId);

@@ -27,14 +27,12 @@ namespace PartSphere.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ===== USER =====
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasIndex(u => u.Email).IsUnique();
                 entity.Property(u => u.Role).HasConversion<string>();
             });
 
-            // ===== CUSTOMER =====
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.HasOne(c => c.User)
@@ -68,13 +66,11 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ===== VEHICLE =====
             modelBuilder.Entity<Vehicle>(entity =>
             {
                 entity.HasIndex(v => v.VehicleNumber).IsUnique();
             });
 
-            // ===== VENDOR =====
             modelBuilder.Entity<Vendor>(entity =>
             {
                 entity.HasMany(v => v.Parts)
@@ -88,13 +84,11 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ===== VEHICLE PART =====
             modelBuilder.Entity<VehiclePart>(entity =>
             {
                 entity.Property(p => p.Price).HasColumnType("decimal(10,2)");
             });
 
-            // ===== SALES INVOICE =====
             modelBuilder.Entity<SalesInvoice>(entity =>
             {
                 entity.HasOne(s => s.Staff)
@@ -113,7 +107,6 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ===== SALES ITEM =====
             modelBuilder.Entity<SalesItem>(entity =>
             {
                 entity.HasOne(i => i.VehiclePart)
@@ -122,7 +115,6 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ===== PURCHASE INVOICE =====
             modelBuilder.Entity<PurchaseInvoice>(entity =>
             {
                 entity.HasMany(p => p.Items)
@@ -131,7 +123,6 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ===== PURCHASE ITEM =====
             modelBuilder.Entity<PurchaseItem>(entity =>
             {
                 entity.HasOne(i => i.VehiclePart)
@@ -140,7 +131,6 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ===== CREDIT PAYMENT =====
             modelBuilder.Entity<CreditPayment>(entity =>
             {
                 entity.Property(c => c.Status).HasConversion<string>();
@@ -151,19 +141,16 @@ namespace PartSphere.Data
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // ===== NOTIFICATION =====
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.Property(n => n.Type).HasConversion<string>();
             });
 
-            // ===== APPOINTMENT =====
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.Property(a => a.Status).HasConversion<string>();
             });
 
-            // ===== PART REQUEST =====
             modelBuilder.Entity<PartRequest>(entity =>
             {
                 entity.HasOne(pr => pr.Customer)

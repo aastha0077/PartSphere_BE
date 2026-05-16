@@ -12,8 +12,8 @@ namespace PartSphere.Services
     {
         public string PartName { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
-        public int Confidence { get; set; } // 0-100
-        public string Urgency { get; set; } = "Medium"; // Low, Medium, High, Critical
+        public int Confidence { get; set; }
+        public string Urgency { get; set; } = "Medium";
         public int EstimatedRemainingKm { get; set; }
     }
 

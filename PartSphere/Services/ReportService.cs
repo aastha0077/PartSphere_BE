@@ -203,7 +203,7 @@ namespace PartSphere.Services
         {
             var now = DateTime.UtcNow;
             var start = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
-            
+
             var invoices = await _context.SalesInvoices
                 .Where(s => s.Date >= start)
                 .ToListAsync();

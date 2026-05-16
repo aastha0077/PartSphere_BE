@@ -19,7 +19,6 @@ namespace PartSphere.Models
 
         public DateTime? LastServiceDate { get; set; }
 
-        // Foreign key
         public int CustomerId { get; set; }
         public Customer Customer { get; set; } = null!;
     }
