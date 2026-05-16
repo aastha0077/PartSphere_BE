@@ -35,9 +35,11 @@ namespace PartSphere.Controllers
 
             if (role == "Customer")
             {
-                // Customer only sees their own orders
-                // Note: We'd ideally filter this in the DB, but doing it in memory here for simplicity given existing service structure
-                orders = orders.Where(o => o.CustomerId == userId); // Assuming CustomerId matches UserId for simplicity (or we'd need to fetch Customer via UserId)
+                var customer = await _customerService.GetByUserIdAsync(userId);
+                if (customer == null)
+                    return Ok(new List<SalesInvoiceDto>());
+
+                orders = orders.Where(o => o.CustomerId == customer.Id);
             }
 
             var sorted = orders
@@ -54,11 +56,15 @@ namespace PartSphere.Controllers
             var role = User.FindFirstValue(ClaimTypes.Role);
 
             var order = await _salesService.GetByIdAsync(id);
-            if (order == null) return NotFound();
 
-            if (role == "Customer" && order.CustomerId != userId) // Assuming CustomerId maps closely to User
+            if (role == "Customer")
             {
-                return Forbid();
+                var customer = await _customerService.GetByUserIdAsync(userId);
+                if (customer == null)
+                    return NotFound("Customer profile not found.");
+
+                if (order.CustomerId != customer.Id)
+                    return Forbid();
             }
 
             return Ok(order);

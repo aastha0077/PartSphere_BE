@@ -75,7 +75,8 @@ namespace PartSphere.Services
             // Create linked customer profile
             var customer = new Customer
             {
-                Name = dto.Name,
+                Name = dto.Name.Trim(),
+                Email = user.Email,
                 Phone = dto.Phone,
                 Address = dto.Address,
                 UserId = user.Id
