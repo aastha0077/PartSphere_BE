@@ -21,15 +21,18 @@ namespace PartSphere.Services
     {
         private readonly IRepository<Customer> _customerRepo;
         private readonly IRepository<Vehicle> _vehicleRepo;
+        private readonly IRepository<User> _userRepo;
         private readonly ILogger<CustomerService> _logger;
 
         public CustomerService(
             IRepository<Customer> customerRepo,
             IRepository<Vehicle> vehicleRepo,
+            IRepository<User> userRepo,
             ILogger<CustomerService> logger)
         {
             _customerRepo = customerRepo;
             _vehicleRepo = vehicleRepo;
+            _userRepo = userRepo;
             _logger = logger;
         }
 
@@ -108,7 +111,18 @@ namespace PartSphere.Services
             var customer = await _customerRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Customer not found.");
 
+            var userId = customer.UserId;
+
             await _customerRepo.DeleteAsync(customer);
+
+            if (userId.HasValue)
+            {
+                var user = await _userRepo.GetByIdAsync(userId.Value);
+                if (user != null)
+                {
+                    await _userRepo.DeleteAsync(user);
+                }
+            }
         }
 
         public async Task<IEnumerable<CustomerSearchResultDto>> SearchAsync(string query)
