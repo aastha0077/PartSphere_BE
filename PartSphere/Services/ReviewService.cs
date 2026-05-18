@@ -25,7 +25,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<ReviewDto>> GetAllAsync()
         {
-            var reviews = await _reviewRepo.Query()
+            List<Review> reviews = await _reviewRepo.Query()
                 .Include(r => r.Customer)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -35,7 +35,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<ReviewDto>> GetByCustomerAsync(int customerId)
         {
-            var reviews = await _reviewRepo.Query()
+            List<Review> reviews = await _reviewRepo.Query()
                 .Include(r => r.Customer)
                 .Where(r => r.CustomerId == customerId)
                 .OrderByDescending(r => r.CreatedAt)
@@ -49,7 +49,7 @@ namespace PartSphere.Services
             if (!await _customerRepo.ExistsAsync(dto.CustomerId))
                 throw new KeyNotFoundException("Customer not found.");
 
-            var review = new Review
+            Review review = new Review
             {
                 CustomerId = dto.CustomerId,
                 Rating = dto.Rating,
@@ -58,14 +58,14 @@ namespace PartSphere.Services
 
             await _reviewRepo.AddAsync(review);
 
-            var created = await _reviewRepo.Query()
+            Review created = await _reviewRepo.Query()
                 .Include(r => r.Customer)
                 .FirstAsync(r => r.Id == review.Id);
 
             return MapToDto(created);
         }
 
-        private static ReviewDto MapToDto(Review r) => new()
+        private static ReviewDto MapToDto(Review r) => new ReviewDto
         {
             Id = r.Id,
             CustomerId = r.CustomerId,
