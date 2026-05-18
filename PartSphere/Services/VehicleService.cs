@@ -34,7 +34,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<VehicleDto>> GetAllAsync()
         {
-            var vehicles = await _vehicleRepo.Query()
+            List<Vehicle> vehicles = await _vehicleRepo.Query()
                 .Include(v => v.Customer)
                 .OrderBy(v => v.Brand)
                 .ToListAsync();
@@ -44,7 +44,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<VehicleDto>> GetByCustomerIdAsync(int customerId)
         {
-            var vehicles = await _vehicleRepo.Query()
+            List<Vehicle> vehicles = await _vehicleRepo.Query()
                 .Include(v => v.Customer)
                 .Where(v => v.CustomerId == customerId)
                 .ToListAsync();
@@ -54,7 +54,7 @@ namespace PartSphere.Services
 
         public async Task<VehicleDto> GetByIdAsync(int id)
         {
-            var vehicle = await _vehicleRepo.Query()
+            Vehicle? vehicle = await _vehicleRepo.Query()
                 .Include(v => v.Customer)
                 .FirstOrDefaultAsync(v => v.Id == id)
                 ?? throw new KeyNotFoundException("Vehicle not found.");
@@ -67,12 +67,12 @@ namespace PartSphere.Services
             if (!await _customerRepo.ExistsAsync(dto.CustomerId))
                 throw new KeyNotFoundException("Customer not found.");
 
-            var existing = await _vehicleRepo.Query()
+            Vehicle? existing = await _vehicleRepo.Query()
                 .FirstOrDefaultAsync(v => v.VehicleNumber == dto.VehicleNumber);
             if (existing != null)
                 throw new ArgumentException("Vehicle number already registered.");
 
-            var vehicle = new Vehicle
+            Vehicle vehicle = new Vehicle
             {
                 Brand = dto.Brand,
                 Model = dto.Model,
@@ -89,7 +89,7 @@ namespace PartSphere.Services
 
         public async Task<VehicleDto> UpdateAsync(int id, UpdateVehicleDto dto)
         {
-            var vehicle = await _vehicleRepo.GetByIdAsync(id)
+            Vehicle? vehicle = await _vehicleRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vehicle not found.");
 
             if (dto.Brand != null) vehicle.Brand = dto.Brand;
@@ -104,7 +104,7 @@ namespace PartSphere.Services
 
         public async Task DeleteAsync(int id)
         {
-            var vehicle = await _vehicleRepo.GetByIdAsync(id)
+            Vehicle? vehicle = await _vehicleRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vehicle not found.");
 
             await _vehicleRepo.DeleteAsync(vehicle);
@@ -114,7 +114,7 @@ namespace PartSphere.Services
         {
             var q = query.ToLower().Trim();
 
-            var vehicles = await _vehicleRepo.Query()
+            List<Vehicle> vehicles = await _vehicleRepo.Query()
                 .Include(v => v.Customer)
                 .Where(v =>
                     v.VehicleNumber.ToLower().Contains(q) ||
@@ -126,7 +126,7 @@ namespace PartSphere.Services
             return vehicles.Select(MapToDto);
         }
 
-        private static VehicleDto MapToDto(Vehicle v) => new()
+        private static VehicleDto MapToDto(Vehicle v) => new VehicleDto
         {
             Id = v.Id,
             Brand = v.Brand,

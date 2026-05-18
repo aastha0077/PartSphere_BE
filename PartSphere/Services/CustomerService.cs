@@ -38,7 +38,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<CustomerDto>> GetAllAsync()
         {
-            var customers = await _customerRepo.Query()
+            List<Customer> customers = await _customerRepo.Query()
                 .Include(c => c.Vehicles)
                 .Include(c => c.SalesInvoices)
                 .OrderBy(c => c.Name)
@@ -49,7 +49,7 @@ namespace PartSphere.Services
 
         public async Task<CustomerDto> GetByIdAsync(int id)
         {
-            var customer = await _customerRepo.Query()
+            Customer? customer = await _customerRepo.Query()
                 .Include(c => c.Vehicles)
                 .Include(c => c.SalesInvoices)
                 .FirstOrDefaultAsync(c => c.Id == id)
@@ -93,7 +93,7 @@ namespace PartSphere.Services
 
         public async Task<CustomerDto> UpdateAsync(int id, UpdateCustomerDto dto)
         {
-            var customer = await _customerRepo.GetByIdAsync(id)
+            Customer? customer = await _customerRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Customer not found.");
 
             if (dto.Name != null) customer.Name = dto.Name;
@@ -108,7 +108,7 @@ namespace PartSphere.Services
 
         public async Task DeleteAsync(int id)
         {
-            var customer = await _customerRepo.GetByIdAsync(id)
+            Customer? customer = await _customerRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Customer not found.");
 
             var userId = customer.UserId;
