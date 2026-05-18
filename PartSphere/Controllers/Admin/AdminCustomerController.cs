@@ -58,5 +58,12 @@ namespace PartSphere.Controllers.Admin
             var customer = await _customerService.UpdateAsync(id, dto);
             return Ok(customer);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _customerService.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }
