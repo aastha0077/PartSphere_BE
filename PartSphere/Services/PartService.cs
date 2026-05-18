@@ -39,7 +39,7 @@ namespace PartSphere.Services
 
         public async Task<(IEnumerable<PartDto> Items, int Total)> GetAllAsync(string? search, string? category, int page, int pageSize)
         {
-            var query = _partRepo.Query()
+            IQueryable<VehiclePart> query = _partRepo.Query()
                 .Include(p => p.Vendor)
                 .Where(p => !p.IsDeleted);
 
@@ -54,8 +54,8 @@ namespace PartSphere.Services
                 query = query.Where(p => p.Category == category);
             }
 
-            var total = await query.CountAsync();
-            var parts = await query
+            int total = await query.CountAsync();
+            List<VehiclePart> parts = await query
                 .OrderBy(p => p.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -66,7 +66,7 @@ namespace PartSphere.Services
 
         public async Task<PartDto> GetByIdAsync(int id)
         {
-            var part = await _partRepo.Query()
+            VehiclePart? part = await _partRepo.Query()
                 .Include(p => p.Vendor)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted)
                 ?? throw new KeyNotFoundException("Part not found.");
@@ -79,7 +79,7 @@ namespace PartSphere.Services
             if (!await _vendorRepo.ExistsAsync(dto.VendorId))
                 throw new KeyNotFoundException("Vendor not found.");
 
-            var part = new VehiclePart
+            VehiclePart part = new VehiclePart
             {
                 Name = dto.Name,
                 Brand = dto.Brand,
@@ -101,7 +101,7 @@ namespace PartSphere.Services
 
         public async Task<PartDto> UpdateAsync(int id, UpdatePartDto dto)
         {
-            var part = await _partRepo.Query()
+            VehiclePart? part = await _partRepo.Query()
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted)
                 ?? throw new KeyNotFoundException("Part not found.");
 
@@ -111,7 +111,7 @@ namespace PartSphere.Services
             if (!await _vendorRepo.ExistsAsync(dto.VendorId))
                 throw new KeyNotFoundException("Vendor not found.");
 
-            var previousQty = part.StockQuantity;
+            int previousQty = part.StockQuantity;
 
             part.Name = dto.Name;
             part.Brand = dto.Brand;
@@ -138,14 +138,14 @@ namespace PartSphere.Services
 
         public async Task<PartDto> UpdateStockAsync(int id, UpdateStockDto dto)
         {
-            var part = await _partRepo.Query()
+            VehiclePart? part = await _partRepo.Query()
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted)
                 ?? throw new KeyNotFoundException("Part not found.");
 
             if (!part.RowVersion.SequenceEqual(dto.RowVersion))
                 throw new DbUpdateConcurrencyException("Concurrency conflict. Stock update rejected.");
 
-            var previousQty = part.StockQuantity;
+            int previousQty = part.StockQuantity;
 
             part.StockQuantity = dto.StockQuantity;
             part.UpdatedAt = DateTime.UtcNow;
@@ -158,7 +158,7 @@ namespace PartSphere.Services
 
         public async Task DeleteAsync(int id)
         {
-            var part = await _partRepo.GetByIdAsync(id)
+            VehiclePart? part = await _partRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Part not found.");
 
             part.IsDeleted = true;
@@ -182,7 +182,7 @@ namespace PartSphere.Services
                 previousStockQuantity);
         }
 
-        private static PartDto MapToDto(VehiclePart p) => new()
+        private static PartDto MapToDto(VehiclePart p) => new PartDto
         {
             Id = p.Id,
             Name = p.Name,
