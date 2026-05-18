@@ -15,7 +15,7 @@ namespace PartSphere.Services
         public byte[] GenerateSalesInvoicePdf(SalesInvoice invoice)
         {
 
-            var document = Document.Create(container =>
+            Document document = Document.Create(container =>
             {
                 container.Page(page =>
                 {
