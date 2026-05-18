@@ -21,6 +21,43 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
+            if (!await context.Users.AnyAsync(u => u.Role == UserRole.Staff))
+            {
+                var staff = new User
+                {
+                    Name = "John Staff",
+                    Email = "staff@partsphere.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff@123"),
+                    Role = UserRole.Staff,
+                    IsActive = true
+                };
+                context.Users.Add(staff);
+                await context.SaveChangesAsync();
+            }
+
+            if (!await context.Users.AnyAsync(u => u.Role == UserRole.Customer))
+            {
+                var customerUser = new User
+                {
+                    Name = "Alice Johnson",
+                    Email = "alice@example.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                    Role = UserRole.Customer,
+                    IsActive = true
+                };
+                context.Users.Add(customerUser);
+                await context.SaveChangesAsync();
+
+                // Link to Alice's Customer profile if it already exists
+                var aliceCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Email == "alice@example.com");
+                if (aliceCustomer != null)
+                {
+                    aliceCustomer.UserId = customerUser.Id;
+                    context.Customers.Update(aliceCustomer);
+                    await context.SaveChangesAsync();
+                }
+            }
+
             if (!await context.Vendors.AnyAsync())
             {
                 var vendors = new List<Vendor>
@@ -36,9 +73,10 @@ namespace PartSphere.Data
 
             if (!await context.Customers.AnyAsync())
             {
+                var aliceUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "alice@example.com");
                 var customers = new List<Customer>
                 {
-                    new Customer { Name = "Alice Johnson", Email = "alice@example.com", Phone = "555-0101", Address = "123 Maple St" },
+                    new Customer { Name = "Alice Johnson", Email = "alice@example.com", Phone = "555-0101", Address = "123 Maple St", UserId = aliceUser?.Id },
                     new Customer { Name = "Bob Wilson", Email = "bob@example.com", Phone = "555-0102", Address = "456 Oak Ave" },
                     new Customer { Name = "Charlie Brown", Email = "charlie@example.com", Phone = "555-0103", Address = "789 Pine Rd" }
                 };
