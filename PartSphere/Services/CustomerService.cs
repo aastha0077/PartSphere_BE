@@ -229,7 +229,7 @@ namespace PartSphere.Services
             return customer != null ? MapToDto(customer) : null;
         }
 
-        private static CustomerDto MapToDto(Customer c) => new()
+        private static CustomerDto MapToDto(Customer c) => new CustomerDto
         {
             Id = c.Id,
             Name = c.Name,
