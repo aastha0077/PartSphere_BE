@@ -24,6 +24,9 @@ namespace PartSphere.Models
         [MaxLength(100)]
         public string Category { get; set; } = "General";
 
+        [MaxLength(500)]
+        public string ImageUrl { get; set; } = string.Empty;
+
         public int LifespanKm { get; set; } = 15000;
 
         [Timestamp]

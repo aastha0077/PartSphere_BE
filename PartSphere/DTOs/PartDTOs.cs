@@ -11,6 +11,7 @@ namespace PartSphere.DTOs
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public string Description { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
         public int VendorId { get; set; }
         public string VendorName { get; set; } = string.Empty;
         public bool IsLowStock => StockQuantity < 10;
@@ -37,6 +38,9 @@ namespace PartSphere.DTOs
 
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string ImageUrl { get; set; } = string.Empty;
 
         [Required]
         public int VendorId { get; set; }

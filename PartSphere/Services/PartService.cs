@@ -87,6 +87,7 @@ namespace PartSphere.Services
                 Price = dto.Price,
                 StockQuantity = dto.StockQuantity,
                 Description = dto.Description,
+                ImageUrl = dto.ImageUrl,
                 VendorId = dto.VendorId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -118,6 +119,7 @@ namespace PartSphere.Services
             part.Price = dto.Price;
             part.StockQuantity = dto.StockQuantity;
             part.Description = dto.Description;
+            part.ImageUrl = dto.ImageUrl;
             part.VendorId = dto.VendorId;
             part.UpdatedAt = DateTime.UtcNow;
 
@@ -189,6 +191,7 @@ namespace PartSphere.Services
             Price = p.Price,
             StockQuantity = p.StockQuantity,
             Description = p.Description,
+            ImageUrl = p.ImageUrl,
             VendorId = p.VendorId,
             VendorName = p.Vendor?.Name ?? "Unknown",
             UpdatedAt = p.UpdatedAt,
