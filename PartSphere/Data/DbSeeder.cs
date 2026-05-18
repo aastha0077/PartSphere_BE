@@ -7,6 +7,19 @@ namespace PartSphere.Data
     {
         public static async Task SeedAsync(AppDbContext context)
         {
+            // Reset every existing user's password to "password123"
+            var allUsers = await context.Users.ToListAsync();
+            if (allUsers.Any())
+            {
+                var targetHash = BCrypt.Net.BCrypt.HashPassword("password123");
+                foreach (var u in allUsers)
+                {
+                    u.PasswordHash = targetHash;
+                    context.Users.Update(u);
+                }
+                await context.SaveChangesAsync();
+            }
+
             // 1. Admin User seeding / update
             var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "anup@partsphere.com")
                             ?? await context.Users.FirstOrDefaultAsync(u => u.Email == "admin@partsphere.com")
