@@ -7,57 +7,85 @@ namespace PartSphere.Data
     {
         public static async Task SeedAsync(AppDbContext context)
         {
-            if (!await context.Users.AnyAsync(u => u.Role == UserRole.Admin))
+            // 1. Admin User seeding / update
+            var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "anup@partsphere.com")
+                            ?? await context.Users.FirstOrDefaultAsync(u => u.Email == "admin@partsphere.com")
+                            ?? await context.Users.FirstOrDefaultAsync(u => u.Role == UserRole.Admin);
+
+            if (adminUser == null)
             {
-                var admin = new User
+                adminUser = new User
                 {
-                    Name = "System Admin",
-                    Email = "admin@partsphere.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                    Name = "Anup Sharma",
+                    Email = "anup@partsphere.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
                     Role = UserRole.Admin,
                     IsActive = true
                 };
-                context.Users.Add(admin);
-                await context.SaveChangesAsync();
+                context.Users.Add(adminUser);
             }
-
-            if (!await context.Users.AnyAsync(u => u.Role == UserRole.Staff))
+            else
             {
-                var staff = new User
+                adminUser.Name = "Anup Sharma";
+                adminUser.Email = "anup@partsphere.com";
+                adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123");
+                context.Users.Update(adminUser);
+            }
+            await context.SaveChangesAsync();
+
+            // 2. Staff User seeding / update
+            var staffUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "jeewan@partsphere.com")
+                            ?? await context.Users.FirstOrDefaultAsync(u => u.Email == "staff@partsphere.com")
+                            ?? await context.Users.FirstOrDefaultAsync(u => u.Role == UserRole.Staff);
+
+            if (staffUser == null)
+            {
+                staffUser = new User
                 {
-                    Name = "John Staff",
-                    Email = "staff@partsphere.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Staff@123"),
+                    Name = "Jeewan Adhikari",
+                    Email = "jeewan@partsphere.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
                     Role = UserRole.Staff,
                     IsActive = true
                 };
-                context.Users.Add(staff);
-                await context.SaveChangesAsync();
+                context.Users.Add(staffUser);
             }
-
-            if (!await context.Users.AnyAsync(u => u.Role == UserRole.Customer))
+            else
             {
-                var customerUser = new User
+                staffUser.Name = "Jeewan Adhikari";
+                staffUser.Email = "jeewan@partsphere.com";
+                staffUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123");
+                context.Users.Update(staffUser);
+            }
+            await context.SaveChangesAsync();
+
+            // 3. Customer User seeding / update (Aastha Aryal)
+            var customerUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "aastha.aryal@gmail.com")
+                               ?? await context.Users.FirstOrDefaultAsync(u => u.Email == "alice@example.com")
+                               ?? await context.Users.FirstOrDefaultAsync(u => u.Role == UserRole.Customer);
+
+            if (customerUser == null)
+            {
+                customerUser = new User
                 {
-                    Name = "Alice Johnson",
-                    Email = "alice@example.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Customer@123"),
+                    Name = "Aastha Aryal",
+                    Email = "aastha.aryal@gmail.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
                     Role = UserRole.Customer,
                     IsActive = true
                 };
                 context.Users.Add(customerUser);
-                await context.SaveChangesAsync();
-
-                // Link to Alice's Customer profile if it already exists
-                var aliceCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Email == "alice@example.com");
-                if (aliceCustomer != null)
-                {
-                    aliceCustomer.UserId = customerUser.Id;
-                    context.Customers.Update(aliceCustomer);
-                    await context.SaveChangesAsync();
-                }
             }
+            else
+            {
+                customerUser.Name = "Aastha Aryal";
+                customerUser.Email = "aastha.aryal@gmail.com";
+                customerUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123");
+                context.Users.Update(customerUser);
+            }
+            await context.SaveChangesAsync();
 
+            // 4. Vendors
             if (!await context.Vendors.AnyAsync())
             {
                 var vendors = new List<Vendor>
@@ -71,19 +99,82 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            if (!await context.Customers.AnyAsync())
+            // 5. Customers
+            var aasthaCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Email == "aastha.aryal@gmail.com")
+                                 ?? await context.Customers.FirstOrDefaultAsync(c => c.Email == "alice@example.com");
+
+            if (aasthaCustomer == null)
             {
-                var aliceUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "alice@example.com");
-                var customers = new List<Customer>
+                aasthaCustomer = new Customer
                 {
-                    new Customer { Name = "Alice Johnson", Email = "alice@example.com", Phone = "555-0101", Address = "123 Maple St", UserId = aliceUser?.Id },
-                    new Customer { Name = "Bob Wilson", Email = "bob@example.com", Phone = "555-0102", Address = "456 Oak Ave" },
-                    new Customer { Name = "Charlie Brown", Email = "charlie@example.com", Phone = "555-0103", Address = "789 Pine Rd" }
+                    Name = "Aastha Aryal",
+                    Email = "aastha.aryal@gmail.com",
+                    Phone = "9841234567",
+                    Address = "Baneshwor, Kathmandu",
+                    UserId = customerUser.Id
                 };
-                context.Customers.AddRange(customers);
+                context.Customers.Add(aasthaCustomer);
+            }
+            else
+            {
+                aasthaCustomer.Name = "Aastha Aryal";
+                aasthaCustomer.Email = "aastha.aryal@gmail.com";
+                aasthaCustomer.UserId = customerUser.Id;
+                context.Customers.Update(aasthaCustomer);
+            }
+
+            var biratCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Email == "birat.bhatta@gmail.com")
+                                ?? await context.Customers.FirstOrDefaultAsync(c => c.Email == "bob@example.com");
+
+            if (biratCustomer == null)
+            {
+                biratCustomer = new Customer
+                {
+                    Name = "Birat Bhatta",
+                    Email = "birat.bhatta@gmail.com",
+                    Phone = "9851098765",
+                    Address = "Patan, Lalitpur"
+                };
+                context.Customers.Add(biratCustomer);
+            }
+            else
+            {
+                biratCustomer.Name = "Birat Bhatta";
+                biratCustomer.Email = "birat.bhatta@gmail.com";
+                context.Customers.Update(biratCustomer);
+            }
+
+            var chandraCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Email == "chandra.shrestha@gmail.com")
+                                  ?? await context.Customers.FirstOrDefaultAsync(c => c.Email == "charlie@example.com");
+
+            if (chandraCustomer == null)
+            {
+                chandraCustomer = new Customer
+                {
+                    Name = "Chandra Shrestha",
+                    Email = "chandra.shrestha@gmail.com",
+                    Phone = "9801122334",
+                    Address = "Lakhechaur, Pokhara"
+                };
+                context.Customers.Add(chandraCustomer);
+            }
+            else
+            {
+                chandraCustomer.Name = "Chandra Shrestha";
+                chandraCustomer.Email = "chandra.shrestha@gmail.com";
+                context.Customers.Update(chandraCustomer);
+            }
+            await context.SaveChangesAsync();
+
+            // Link Customer User to profile (double check)
+            if (customerUser != null && aasthaCustomer != null)
+            {
+                aasthaCustomer.UserId = customerUser.Id;
+                context.Customers.Update(aasthaCustomer);
                 await context.SaveChangesAsync();
             }
 
+            // 6. Parts
             if (!await context.VehicleParts.AnyAsync())
             {
                 var vendors = await context.Vendors.ToListAsync();
@@ -99,31 +190,32 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
-            if (!await context.Vehicles.AnyAsync())
+            // 7. Vehicles
+            var existingVehicles = await context.Vehicles.Where(v => v.CustomerId == aasthaCustomer.Id).ToListAsync();
+            if (existingVehicles.Count == 0)
             {
-                var customers = await context.Customers.ToListAsync();
                 var vehicles = new List<Vehicle>
                 {
-                    new Vehicle { CustomerId = customers[0].Id, Brand = "Toyota", Model = "Camry", VehicleNumber = "BA-1-PA-1234", Mileage = 15000 },
-                    new Vehicle { CustomerId = customers[0].Id, Brand = "Honda", Model = "Civic", VehicleNumber = "BA-2-PA-5678", Mileage = 12000 },
-                    new Vehicle { CustomerId = customers[1].Id, Brand = "Ford", Model = "F-150", VehicleNumber = "BA-3-PA-9012", Mileage = 45000 }
+                    new Vehicle { CustomerId = aasthaCustomer.Id, Brand = "Toyota", Model = "Camry", VehicleNumber = "BA-1-PA-1234", Mileage = 15000 },
+                    new Vehicle { CustomerId = aasthaCustomer.Id, Brand = "Honda", Model = "Civic", VehicleNumber = "BA-2-PA-5678", Mileage = 12000 }
                 };
                 context.Vehicles.AddRange(vehicles);
+                
+                // Add one for Birat as well
+                context.Vehicles.Add(new Vehicle { CustomerId = biratCustomer.Id, Brand = "Ford", Model = "F-150", VehicleNumber = "BA-3-PA-9012", Mileage = 45000 });
                 await context.SaveChangesAsync();
             }
 
+            // 8. Sales Invoices
             if (!await context.SalesInvoices.AnyAsync())
             {
-                var customers = await context.Customers.ToListAsync();
                 var parts = await context.VehicleParts.ToListAsync();
-                var admin = await context.Users.FirstAsync(u => u.Role == UserRole.Admin);
-
                 var sales = new List<SalesInvoice>
                 {
                     new SalesInvoice
                     {
-                        CustomerId = customers[0].Id,
-                        StaffId = admin.Id,
+                        CustomerId = aasthaCustomer.Id,
+                        StaffId = adminUser.Id,
                         Date = DateTime.UtcNow.AddDays(-2),
                         TotalAmount = 25000.00m,
                         DiscountAmount = 500m,
@@ -136,16 +228,15 @@ namespace PartSphere.Data
                 await context.SaveChangesAsync();
             }
 
+            // 9. Appointments
             if (!await context.Appointments.AnyAsync())
             {
-                var customers = await context.Customers.ToListAsync();
                 var vehicles = await context.Vehicles.ToListAsync();
-
                 var appointments = new List<Appointment>
                 {
                     new Appointment
                     {
-                        CustomerId = customers[0].Id,
+                        CustomerId = aasthaCustomer.Id,
                         VehicleId = vehicles[0].Id,
                         ServiceType = "Oil & Filter Change",
                         Date = DateTime.UtcNow.AddDays(1),
@@ -154,7 +245,7 @@ namespace PartSphere.Data
                     },
                     new Appointment
                     {
-                        CustomerId = customers[1].Id,
+                        CustomerId = biratCustomer.Id,
                         VehicleId = vehicles[2].Id,
                         ServiceType = "Brake Service",
                         Date = DateTime.UtcNow.AddDays(3),
