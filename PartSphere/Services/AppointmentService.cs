@@ -29,7 +29,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<AppointmentDto>> GetAllAsync()
         {
-            var appointments = await _appointmentRepo.Query()
+            List<Appointment> appointments = await _appointmentRepo.Query()
                 .Include(a => a.Customer)
                 .Include(a => a.Vehicle)
                 .OrderByDescending(a => a.Date)
@@ -40,7 +40,7 @@ namespace PartSphere.Services
 
         public async Task<IEnumerable<AppointmentDto>> GetByCustomerAsync(int customerId)
         {
-            var appointments = await _appointmentRepo.Query()
+            List<Appointment> appointments = await _appointmentRepo.Query()
                 .Include(a => a.Customer)
                 .Include(a => a.Vehicle)
                 .Where(a => a.CustomerId == customerId)
@@ -52,7 +52,7 @@ namespace PartSphere.Services
 
         public async Task<AppointmentDto> GetByIdAsync(int id)
         {
-            var appointment = await _appointmentRepo.Query()
+            Appointment? appointment = await _appointmentRepo.Query()
                 .Include(a => a.Customer)
                 .Include(a => a.Vehicle)
                 .FirstOrDefaultAsync(a => a.Id == id)
@@ -66,7 +66,7 @@ namespace PartSphere.Services
             if (!await _customerRepo.ExistsAsync(dto.CustomerId))
                 throw new KeyNotFoundException("Customer not found.");
 
-            var appointment = new Appointment
+            Appointment appointment = new Appointment
             {
                 CustomerId = dto.CustomerId,
                 VehicleId = dto.VehicleId,
@@ -83,7 +83,7 @@ namespace PartSphere.Services
 
         public async Task<AppointmentDto> UpdateStatusAsync(int id, string status)
         {
-            var appointment = await _appointmentRepo.GetByIdAsync(id)
+            Appointment? appointment = await _appointmentRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Appointment not found.");
 
             if (Enum.TryParse<AppointmentStatus>(status, out var parsed))
@@ -99,7 +99,7 @@ namespace PartSphere.Services
             return await GetByIdAsync(appointment.Id);
         }
 
-        private static AppointmentDto MapToDto(Appointment a) => new()
+        private static AppointmentDto MapToDto(Appointment a) => new AppointmentDto
         {
             Id = a.Id,
             CustomerId = a.CustomerId,
